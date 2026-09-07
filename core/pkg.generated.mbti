@@ -1,0 +1,29 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Wyc060514/configscope/core"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn parse_path(String) -> Result[ConfigPath, ConfigPathError]
+
+// Errors
+
+// Types and methods
+pub struct ConfigPath {
+  segments : Array[String]
+} derive(Eq, @debug.Debug)
+pub fn ConfigPath::length(Self) -> Int
+pub fn ConfigPath::segment(Self, Int) -> String?
+pub fn ConfigPath::to_string(Self) -> String
+
+pub(all) enum ConfigPathError {
+  EmptyPath
+  EmptySegment(Int)
+} derive(Eq, @debug.Debug)
+pub fn ConfigPathError::to_string(Self) -> String
+
+// Type aliases
+
+// Traits

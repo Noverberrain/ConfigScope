@@ -1,0 +1,5 @@
+// import {
+//   "Wyc060514/configscope" @lib,
+// }
+
+pkgtype(kind: "executable")

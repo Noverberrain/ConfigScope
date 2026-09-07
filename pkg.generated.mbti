@@ -1,0 +1,20 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Wyc060514/configscope"
+
+import {
+  "Wyc060514/configscope/core",
+}
+
+// Values
+pub fn parse_path(String) -> Result[@core.ConfigPath, @core.ConfigPathError]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @core {type ConfigPath}
+
+pub using @core {type ConfigPathError}
+
+// Traits
