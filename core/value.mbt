@@ -201,3 +201,38 @@ pub fn ConfigValue::merge(
     (_, later_raw) => { raw: later_raw }
   }
 }
+
+///|
+/// Recursively merge an earlier configuration value with a later override.
+///
+/// When both values at a field are objects, their fields are merged
+/// recursively. Arrays and scalar values are replaced by the later value.
+fn deep_merge_raw(base : Json, later : Json) -> Json {
+  match (base, later) {
+    (Object(base_fields), Object(later_fields)) => {
+      let merged_fields : Map[String, Json] = Map([])
+      base_fields.each((key, value) => merged_fields[key] = value)
+      later_fields.each((key, value) => {
+        match base_fields.get(key) {
+          Some(base_value) =>
+            merged_fields[key] = deep_merge_raw(base_value, value)
+          None => merged_fields[key] = value
+        }
+      })
+      Json::object(merged_fields)
+    }
+    (_, later_value) => later_value
+  }
+}
+
+///|
+/// Recursively merge two configuration values, with the later value winning.
+///
+/// Nested objects preserve fields from both inputs. A later scalar, array, or
+/// type change replaces the earlier value at that field.
+pub fn ConfigValue::deep_merge(
+  self : ConfigValue,
+  later : ConfigValue,
+) -> ConfigValue {
+  { raw: deep_merge_raw(self.raw, later.raw) }
+}

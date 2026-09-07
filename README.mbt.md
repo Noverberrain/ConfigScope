@@ -6,13 +6,14 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Four foundational features are now
+The project is being built incrementally. Five foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
 2. a JSON-compatible configuration value model;
 3. nested value lookup through parsed configuration paths;
-4. shallow configuration merging with later values taking precedence.
+4. shallow configuration merging with later values taking precedence;
+5. recursive merging for nested configuration objects.
 
 ### Configuration paths
 
@@ -86,5 +87,55 @@ test {
 }
 ```
 
-Not implemented yet: recursive merge, provenance tracking, explanations, diff,
-audit rules, JSON text adapters, and the CLI.
+
+### Recursive merge
+
+```mbt check
+///|
+test {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(80.0))]),
+        ),
+      ),
+    ]),
+  )
+  let production = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("host", @configscope.ConfigValue::string("prod"))]),
+        ),
+      ),
+    ]),
+  )
+  let merged = defaults.deep_merge(production)
+  inspect(
+    merged
+    .get(@configscope.parse_path("server.port").unwrap())
+    .unwrap()
+    .as_number()
+    .unwrap(),
+    content="80",
+  )
+  inspect(
+    merged
+    .get(@configscope.parse_path("server.host").unwrap())
+    .unwrap()
+    .as_string()
+    .unwrap(),
+    content="prod",
+  )
+}
+```
+
+When both values at the same path are objects, their fields are merged
+recursively. Later arrays, scalars, and conflicting types replace earlier
+values.
+
+Not implemented yet: provenance tracking, explanations, diff, audit rules,
+JSON text adapters, and the CLI.

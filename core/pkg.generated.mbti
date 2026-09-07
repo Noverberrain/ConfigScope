@@ -33,6 +33,7 @@ pub fn ConfigValue::as_number(Self) -> Double?
 pub fn ConfigValue::as_string(Self) -> String?
 pub fn ConfigValue::boolean(Bool) -> Self
 pub fn ConfigValue::contains_field(Self, String) -> Bool
+pub fn ConfigValue::deep_merge(Self, Self) -> Self
 pub fn ConfigValue::element(Self, Int) -> Self?
 pub fn ConfigValue::empty_object() -> Self
 pub fn ConfigValue::field(Self, String) -> Self?

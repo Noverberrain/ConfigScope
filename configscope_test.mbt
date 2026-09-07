@@ -253,3 +253,149 @@ test "merge lets a scalar or array override the earlier value" {
   assert_eq(production.kind().to_string(), "array")
   assert_eq(production.element(0).unwrap().as_string().unwrap(), "us-east")
 }
+
+///|
+test "deep merge preserves nested defaults and applies overrides" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([
+            ("host", @configscope.ConfigValue::string("localhost")),
+            (
+              "http",
+              @configscope.ConfigValue::object(
+                Map([
+                  ("port", @configscope.ConfigValue::number(80.0)),
+                  ("enabled", @configscope.ConfigValue::boolean(true)),
+                ]),
+              ),
+            ),
+          ]),
+        ),
+      ),
+      ("log_level", @configscope.ConfigValue::string("info")),
+    ]),
+  )
+  let production = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([
+            (
+              "http",
+              @configscope.ConfigValue::object(
+                Map([("port", @configscope.ConfigValue::number(8080.0))]),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    ]),
+  )
+  let merged = defaults.deep_merge(production)
+  let server = merged.get(@configscope.parse_path("server").unwrap()).unwrap()
+  assert_eq(server.field("host").unwrap().as_string().unwrap(), "localhost")
+  let http = merged
+    .get(@configscope.parse_path("server.http").unwrap())
+    .unwrap()
+  assert_eq(http.field("port").unwrap().as_number().unwrap(), 8080.0)
+  assert_eq(http.field("enabled").unwrap().as_boolean().unwrap(), true)
+  assert_eq(merged.field("log_level").unwrap().as_string().unwrap(), "info")
+}
+
+///|
+test "deep merge replaces arrays, scalars, and conflicting types" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "features",
+        @configscope.ConfigValue::array([
+          @configscope.ConfigValue::string("search"),
+          @configscope.ConfigValue::string("metrics"),
+        ]),
+      ),
+      ("enabled", @configscope.ConfigValue::boolean(true)),
+      (
+        "limits",
+        @configscope.ConfigValue::object(
+          Map([("requests", @configscope.ConfigValue::number(100.0))]),
+        ),
+      ),
+    ]),
+  )
+  let later = @configscope.ConfigValue::object(
+    Map([
+      (
+        "features",
+        @configscope.ConfigValue::array([
+          @configscope.ConfigValue::string("audit"),
+        ]),
+      ),
+      ("enabled", @configscope.ConfigValue::boolean(false)),
+      ("limits", @configscope.ConfigValue::number(10.0)),
+    ]),
+  )
+  let merged = defaults.deep_merge(later)
+  assert_eq(merged.field("features").unwrap().length().unwrap(), 1)
+  assert_eq(
+    merged.field("features").unwrap().element(0).unwrap().as_string().unwrap(),
+    "audit",
+  )
+  assert_eq(merged.field("enabled").unwrap().as_boolean().unwrap(), false)
+  assert_eq(merged.field("limits").unwrap().as_number().unwrap(), 10.0)
+}
+
+///|
+test "deep merge also lets a non-object later value replace the root" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([("name", @configscope.ConfigValue::string("development"))]),
+  )
+  let later = @configscope.ConfigValue::string("production")
+  let merged = defaults.deep_merge(later)
+  assert_eq(merged.kind().to_string(), "string")
+  assert_eq(merged.as_string().unwrap(), "production")
+}
+
+///|
+test "deep merge does not mutate either input" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(80.0))]),
+        ),
+      ),
+    ]),
+  )
+  let later = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(8080.0))]),
+        ),
+      ),
+    ]),
+  )
+  let _merged = defaults.deep_merge(later)
+  assert_eq(
+    defaults
+    .get(@configscope.parse_path("server.port").unwrap())
+    .unwrap()
+    .as_number()
+    .unwrap(),
+    80.0,
+  )
+  assert_eq(
+    later
+    .get(@configscope.parse_path("server.port").unwrap())
+    .unwrap()
+    .as_number()
+    .unwrap(),
+    8080.0,
+  )
+}
