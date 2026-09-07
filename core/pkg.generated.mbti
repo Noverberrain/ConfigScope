@@ -36,6 +36,7 @@ pub fn ConfigValue::contains_field(Self, String) -> Bool
 pub fn ConfigValue::element(Self, Int) -> Self?
 pub fn ConfigValue::empty_object() -> Self
 pub fn ConfigValue::field(Self, String) -> Self?
+pub fn ConfigValue::get(Self, ConfigPath) -> Self?
 pub fn ConfigValue::kind(Self) -> ConfigValueKind
 pub fn ConfigValue::length(Self) -> Int?
 pub fn ConfigValue::null() -> Self

@@ -6,11 +6,12 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Two foundational features are now
+The project is being built incrementally. Three foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
-2. a JSON-compatible configuration value model.
+2. a JSON-compatible configuration value model;
+3. nested value lookup through parsed configuration paths.
 
 ### Configuration paths
 
@@ -44,6 +45,29 @@ test {
 The value model supports null, boolean, number, string, array, and object
 values. Its internal representation is private, and collection constructors
 isolate their top-level input containers.
+
+### Path lookup
+
+```mbt check
+///|
+test {
+  let config = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(8080.0))]),
+        ),
+      ),
+    ]),
+  )
+  let path = @configscope.parse_path("server.port").unwrap()
+  inspect(config.get(path).unwrap().as_number().unwrap(), content="8080")
+}
+```
+
+Lookup follows object fields only. Missing fields, non-object intermediate values,
+and array indexes return `None`.
 
 Not implemented yet: layered merge, provenance tracking, explanations, diff,
 audit rules, JSON text adapters, and the CLI.

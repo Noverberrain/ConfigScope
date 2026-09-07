@@ -160,3 +160,23 @@ pub fn ConfigValueKind::to_string(self : ConfigValueKind) -> String {
     Object => "object"
   }
 }
+
+///|
+/// Read a nested value using a dot-separated configuration path.
+///
+/// The lookup succeeds only when every path segment selects an object field.
+/// Arrays are intentionally not indexed by this first path API.
+pub fn ConfigValue::get(self : ConfigValue, path : ConfigPath) -> ConfigValue? {
+  let mut current = self
+  for segment in path.segments {
+    match current.raw {
+      Object(fields) =>
+        match fields.get(segment) {
+          Some(raw) => current = { raw, }
+          None => return None
+        }
+      _ => return None
+    }
+  }
+  Some(current)
+}
