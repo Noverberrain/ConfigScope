@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "Wyc060514/configscope/core"
+package "Noverberrain/configscope/core"
 
 import {
   "moonbitlang/core/debug",

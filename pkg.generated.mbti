@@ -1,8 +1,8 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "Wyc060514/configscope"
+package "Noverberrain/configscope"
 
 import {
-  "Wyc060514/configscope/core",
+  "Noverberrain/configscope/core",
 }
 
 // Values

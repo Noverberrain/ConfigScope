@@ -1,5 +1,5 @@
 // import {
-//   "Wyc060514/configscope" @lib,
+//   "Noverberrain/configscope" @lib,
 // }
 
 pkgtype(kind: "executable")
