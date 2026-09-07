@@ -39,6 +39,7 @@ pub fn ConfigValue::field(Self, String) -> Self?
 pub fn ConfigValue::get(Self, ConfigPath) -> Self?
 pub fn ConfigValue::kind(Self) -> ConfigValueKind
 pub fn ConfigValue::length(Self) -> Int?
+pub fn ConfigValue::merge(Self, Self) -> Self
 pub fn ConfigValue::null() -> Self
 pub fn ConfigValue::number(Double) -> Self
 pub fn ConfigValue::object(Map[String, Self]) -> Self

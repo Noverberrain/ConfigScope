@@ -181,3 +181,75 @@ test "lookup can return an object or a scalar at any path depth" {
     .unwrap()
   assert_eq(port.kind().to_string(), "number")
 }
+
+///|
+test "merge combines object fields with later values winning" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      ("host", @configscope.ConfigValue::string("127.0.0.1")),
+      ("port", @configscope.ConfigValue::number(80.0)),
+      ("debug", @configscope.ConfigValue::boolean(false)),
+    ]),
+  )
+  let environment = @configscope.ConfigValue::object(
+    Map([
+      ("port", @configscope.ConfigValue::number(8080.0)),
+      ("debug", @configscope.ConfigValue::boolean(true)),
+    ]),
+  )
+  let merged = defaults.merge(environment)
+  assert_eq(merged.field("host").unwrap().as_string().unwrap(), "127.0.0.1")
+  assert_eq(merged.field("port").unwrap().as_number().unwrap(), 8080.0)
+  assert_eq(merged.field("debug").unwrap().as_boolean().unwrap(), true)
+  assert_eq(merged.length().unwrap(), 3)
+}
+
+///|
+test "merge replaces nested objects as a shallow operation" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([
+            ("host", @configscope.ConfigValue::string("localhost")),
+            ("port", @configscope.ConfigValue::number(80.0)),
+          ]),
+        ),
+      ),
+    ]),
+  )
+  let environment = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(8080.0))]),
+        ),
+      ),
+    ]),
+  )
+  let merged = defaults.merge(environment)
+  let server = merged.field("server").unwrap()
+  assert_eq(server.field("port").unwrap().as_number().unwrap(), 8080.0)
+  assert_true(server.field("host") is None)
+}
+
+///|
+test "merge lets a scalar or array override the earlier value" {
+  let config = @configscope.ConfigValue::object(
+    Map([("enabled", @configscope.ConfigValue::boolean(true))]),
+  )
+  let disabled = config.merge(@configscope.ConfigValue::boolean(false))
+  assert_eq(disabled.kind().to_string(), "boolean")
+  assert_eq(disabled.as_boolean().unwrap(), false)
+
+  let fallback = @configscope.ConfigValue::string("development")
+  let production = fallback.merge(
+    @configscope.ConfigValue::array([
+      @configscope.ConfigValue::string("us-east"),
+    ]),
+  )
+  assert_eq(production.kind().to_string(), "array")
+  assert_eq(production.element(0).unwrap().as_string().unwrap(), "us-east")
+}

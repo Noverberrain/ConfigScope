@@ -180,3 +180,24 @@ pub fn ConfigValue::get(self : ConfigValue, path : ConfigPath) -> ConfigValue? {
   }
   Some(current)
 }
+
+///|
+/// Merge an earlier configuration value with a later override.
+///
+/// Object fields are combined at the current level, and fields from the
+/// override replace fields with the same key. Nested objects are replaced as
+/// whole values; recursive merging will be added separately.
+pub fn ConfigValue::merge(
+  self : ConfigValue,
+  later : ConfigValue,
+) -> ConfigValue {
+  match (self.raw, later.raw) {
+    (Object(base_fields), Object(later_fields)) => {
+      let merged_fields : Map[String, Json] = Map([])
+      base_fields.each((key, value) => merged_fields[key] = value)
+      later_fields.each((key, value) => merged_fields[key] = value)
+      { raw: Json::object(merged_fields) }
+    }
+    (_, later_raw) => { raw: later_raw }
+  }
+}
