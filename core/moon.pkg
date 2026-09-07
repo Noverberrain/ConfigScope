@@ -1,1 +1,3 @@
-// ConfigScope core currently has no external package dependencies.
+import {
+  "moonbitlang/core/json",
+}

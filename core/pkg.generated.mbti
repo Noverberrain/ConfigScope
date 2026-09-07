@@ -24,6 +24,35 @@ pub(all) enum ConfigPathError {
 } derive(Eq, @debug.Debug)
 pub fn ConfigPathError::to_string(Self) -> String
 
+pub struct ConfigValue {
+  raw : Json
+} derive(Eq, @debug.Debug)
+pub fn ConfigValue::array(Array[Self]) -> Self
+pub fn ConfigValue::as_boolean(Self) -> Bool?
+pub fn ConfigValue::as_number(Self) -> Double?
+pub fn ConfigValue::as_string(Self) -> String?
+pub fn ConfigValue::boolean(Bool) -> Self
+pub fn ConfigValue::contains_field(Self, String) -> Bool
+pub fn ConfigValue::element(Self, Int) -> Self?
+pub fn ConfigValue::empty_object() -> Self
+pub fn ConfigValue::field(Self, String) -> Self?
+pub fn ConfigValue::kind(Self) -> ConfigValueKind
+pub fn ConfigValue::length(Self) -> Int?
+pub fn ConfigValue::null() -> Self
+pub fn ConfigValue::number(Double) -> Self
+pub fn ConfigValue::object(Map[String, Self]) -> Self
+pub fn ConfigValue::string(String) -> Self
+
+pub enum ConfigValueKind {
+  Null
+  Boolean
+  Number
+  String
+  Array
+  Object
+} derive(Eq, @debug.Debug)
+pub fn ConfigValueKind::to_string(Self) -> String
+
 // Type aliases
 
 // Traits

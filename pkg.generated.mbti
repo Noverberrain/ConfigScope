@@ -17,4 +17,8 @@ pub using @core {type ConfigPath}
 
 pub using @core {type ConfigPathError}
 
+pub using @core {type ConfigValue}
+
+pub using @core {type ConfigValueKind}
+
 // Traits

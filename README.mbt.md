@@ -6,8 +6,13 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. The first completed feature is a
-simple configuration path type and parser:
+The project is being built incrementally. Two foundational features are now
+available:
+
+1. simple dot-separated configuration paths;
+2. a JSON-compatible configuration value model.
+
+### Configuration paths
 
 ```mbt check
 ///|
@@ -18,11 +23,27 @@ test {
 }
 ```
 
-Supported now:
+Paths reject empty input and empty segments such as `server..port`.
 
-- parse dot-separated paths such as `server.port`;
-- inspect individual path segments;
-- reject empty paths and empty segments.
+### Configuration values
 
-Not implemented yet: configuration values, layered merge, provenance tracking,
-explanations, diff, audit rules, JSON adapters, and the CLI.
+```mbt check
+///|
+test {
+  let server = @configscope.ConfigValue::object(
+    Map([
+      ("host", @configscope.ConfigValue::string("127.0.0.1")),
+      ("port", @configscope.ConfigValue::number(8080.0)),
+    ]),
+  )
+  inspect(server.length().unwrap(), content="2")
+  assert_eq(server.field("port").unwrap().as_number().unwrap(), 8080.0)
+}
+```
+
+The value model supports null, boolean, number, string, array, and object
+values. Its internal representation is private, and collection constructors
+isolate their top-level input containers.
+
+Not implemented yet: layered merge, provenance tracking, explanations, diff,
+audit rules, JSON text adapters, and the CLI.
