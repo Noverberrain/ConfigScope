@@ -10,6 +10,60 @@ pub enum ConfigValueKind {
 } derive(Eq, Debug)
 
 ///|
+/// A path at which recursive merge encountered incompatible structures.
+pub struct ConfigConflict {
+  path : ConfigPath
+  earlier_kind : ConfigValueKind
+  later_kind : ConfigValueKind
+} derive(Eq, Debug)
+
+///|
+/// The merged value and structural conflicts found while producing it.
+pub struct MergeResult {
+  value : ConfigValue
+  conflicts : Array[ConfigConflict]
+} derive(Eq, Debug)
+
+///|
+/// Return the path where this conflict occurred.
+pub fn ConfigConflict::path(self : ConfigConflict) -> ConfigPath {
+  self.path
+}
+
+///|
+/// Return the kind supplied by the earlier configuration.
+pub fn ConfigConflict::earlier_kind(self : ConfigConflict) -> ConfigValueKind {
+  self.earlier_kind
+}
+
+///|
+/// Return the kind supplied by the later configuration.
+pub fn ConfigConflict::later_kind(self : ConfigConflict) -> ConfigValueKind {
+  self.later_kind
+}
+
+///|
+/// Return the value produced by the reported merge.
+pub fn MergeResult::value(self : MergeResult) -> ConfigValue {
+  self.value
+}
+
+///|
+/// Return the number of structural conflicts found by the merge.
+pub fn MergeResult::conflict_count(self : MergeResult) -> Int {
+  self.conflicts.length()
+}
+
+///|
+/// Return one structural conflict, or `None` when the index is out of bounds.
+pub fn MergeResult::conflict(
+  self : MergeResult,
+  index : Int,
+) -> ConfigConflict? {
+  self.conflicts.get(index)
+}
+
+///|
 /// A JSON-compatible value used by ConfigScope's merge and analysis engine.
 ///
 /// The underlying representation is intentionally private. This keeps later
@@ -149,6 +203,19 @@ pub fn ConfigValue::contains_field(self : ConfigValue, key : String) -> Bool {
 }
 
 ///|
+/// Classify a JSON value as a configuration value kind.
+fn ConfigValueKind::from_json(value : Json) -> ConfigValueKind {
+  match value {
+    Null => Null
+    True | False => Boolean
+    Number(_) => Number
+    String(_) => String
+    Array(_) => Array
+    Object(_) => Object
+  }
+}
+
+///|
 /// Return the stable lowercase name used in diagnostics and reports.
 pub fn ConfigValueKind::to_string(self : ConfigValueKind) -> String {
   match self {
@@ -207,6 +274,43 @@ pub fn ConfigValue::merge(
 ///
 /// When both values at a field are objects, their fields are merged
 /// recursively. Arrays and scalar values are replaced by the later value.
+fn deep_merge_with_report_raw(
+  base : Json,
+  later : Json,
+  segments : Array[String],
+  conflicts : Array[ConfigConflict],
+) -> Json {
+  match (base, later) {
+    (Object(base_fields), Object(later_fields)) => {
+      let merged_fields : Map[String, Json] = Map([])
+      base_fields.each((key, value) => merged_fields[key] = value)
+      later_fields.each((key, value) => {
+        let next_segments = segments.copy()
+        next_segments.push(key)
+        match base_fields.get(key) {
+          Some(base_value) =>
+            merged_fields[key] = deep_merge_with_report_raw(
+              base_value, value, next_segments, conflicts,
+            )
+          None => merged_fields[key] = value
+        }
+      })
+      Json::object(merged_fields)
+    }
+    (base_value, later_value) => {
+      if (base_value is Object(_)) != (later_value is Object(_)) {
+        conflicts.push({
+          path: config_path_from_segments(segments),
+          earlier_kind: ConfigValueKind::from_json(base_value),
+          later_kind: ConfigValueKind::from_json(later_value),
+        })
+      }
+      later_value
+    }
+  }
+}
+
+///|
 fn deep_merge_raw(base : Json, later : Json) -> Json {
   match (base, later) {
     (Object(base_fields), Object(later_fields)) => {
@@ -223,6 +327,17 @@ fn deep_merge_raw(base : Json, later : Json) -> Json {
     }
     (_, later_value) => later_value
   }
+}
+
+///|
+/// Describe a recursive merge together with structural type conflicts.
+pub fn ConfigValue::deep_merge_with_report(
+  self : ConfigValue,
+  later : ConfigValue,
+) -> MergeResult {
+  let conflicts : Array[ConfigConflict] = []
+  let merged = deep_merge_with_report_raw(self.raw, later.raw, [], conflicts)
+  { value: { raw: merged }, conflicts }
 }
 
 ///|

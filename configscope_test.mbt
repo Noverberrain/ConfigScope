@@ -399,3 +399,167 @@ test "deep merge does not mutate either input" {
     8080.0,
   )
 }
+
+///|
+test "merge report exposes nested structural conflicts" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([
+            (
+              "limits",
+              @configscope.ConfigValue::object(
+                Map([("requests", @configscope.ConfigValue::number(100.0))]),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    ]),
+  )
+  let later = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("limits", @configscope.ConfigValue::number(10.0))]),
+        ),
+      ),
+    ]),
+  )
+  let report = defaults.deep_merge_with_report(later)
+  assert_eq(report.conflict_count(), 1)
+  let conflict = report.conflict(0).unwrap()
+  assert_true(report.conflict(1) is None)
+  assert_eq(conflict.path().to_string(), "server.limits")
+  assert_eq(conflict.earlier_kind().to_string(), "object")
+  assert_eq(conflict.later_kind().to_string(), "number")
+  assert_eq(
+    report
+    .value()
+    .get(@configscope.parse_path("server.limits").unwrap())
+    .unwrap()
+    .as_number()
+    .unwrap(),
+    10.0,
+  )
+}
+
+///|
+test "merge report ignores compatible replacements" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      ("port", @configscope.ConfigValue::number(80.0)),
+      (
+        "features",
+        @configscope.ConfigValue::array([
+          @configscope.ConfigValue::string("search"),
+        ]),
+      ),
+      ("enabled", @configscope.ConfigValue::boolean(true)),
+    ]),
+  )
+  let later = @configscope.ConfigValue::object(
+    Map([
+      ("port", @configscope.ConfigValue::number(8080.0)),
+      (
+        "features",
+        @configscope.ConfigValue::array([
+          @configscope.ConfigValue::string("audit"),
+        ]),
+      ),
+      ("enabled", @configscope.ConfigValue::boolean(false)),
+    ]),
+  )
+  let report = defaults.deep_merge_with_report(later)
+  assert_eq(report.conflict_count(), 0)
+}
+
+///|
+test "merge report handles root type conflicts" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([("name", @configscope.ConfigValue::string("development"))]),
+  )
+  let later = @configscope.ConfigValue::string("production")
+  let report = defaults.deep_merge_with_report(later)
+  assert_eq(report.conflict_count(), 1)
+  let conflict = report.conflict(0).unwrap()
+  assert_eq(conflict.path().to_string(), "")
+  assert_eq(conflict.earlier_kind().to_string(), "object")
+  assert_eq(conflict.later_kind().to_string(), "string")
+}
+
+///|
+test "merge report does not mutate either input" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(80.0))]),
+        ),
+      ),
+    ]),
+  )
+  let later = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(8080.0))]),
+        ),
+      ),
+    ]),
+  )
+  let _report = defaults.deep_merge_with_report(later)
+  assert_eq(
+    defaults
+    .get(@configscope.parse_path("server.port").unwrap())
+    .unwrap()
+    .as_number()
+    .unwrap(),
+    80.0,
+  )
+  assert_eq(
+    later
+    .get(@configscope.parse_path("server.port").unwrap())
+    .unwrap()
+    .as_number()
+    .unwrap(),
+    8080.0,
+  )
+}
+
+///|
+test "merge report catches a scalar replaced by an object" {
+  let defaults = @configscope.ConfigValue::object(
+    Map([("logging", @configscope.ConfigValue::string("compact"))]),
+  )
+  let later = @configscope.ConfigValue::object(
+    Map([
+      (
+        "logging",
+        @configscope.ConfigValue::object(
+          Map([("format", @configscope.ConfigValue::string("json"))]),
+        ),
+      ),
+    ]),
+  )
+  let report = defaults.deep_merge_with_report(later)
+  assert_eq(report.conflict_count(), 1)
+  let conflict = report.conflict(0).unwrap()
+  assert_eq(conflict.path().to_string(), "logging")
+  assert_eq(conflict.earlier_kind().to_string(), "string")
+  assert_eq(conflict.later_kind().to_string(), "object")
+  assert_eq(
+    report
+    .value()
+    .get(@configscope.parse_path("logging.format").unwrap())
+    .unwrap()
+    .as_string()
+    .unwrap(),
+    "json",
+  )
+}

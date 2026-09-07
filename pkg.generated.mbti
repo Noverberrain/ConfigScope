@@ -13,6 +13,8 @@ pub fn parse_path(String) -> Result[@core.ConfigPath, @core.ConfigPathError]
 // Types and methods
 
 // Type aliases
+pub using @core {type ConfigConflict}
+
 pub using @core {type ConfigPath}
 
 pub using @core {type ConfigPathError}
@@ -20,5 +22,7 @@ pub using @core {type ConfigPathError}
 pub using @core {type ConfigValue}
 
 pub using @core {type ConfigValueKind}
+
+pub using @core {type MergeResult}
 
 // Traits

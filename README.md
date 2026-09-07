@@ -6,14 +6,15 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Five foundational features are now
+The project is being built incrementally. Six foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
 2. a JSON-compatible configuration value model;
 3. nested value lookup through parsed configuration paths;
 4. shallow configuration merging with later values taking precedence;
-5. recursive merging for nested configuration objects.
+5. recursive merging for nested configuration objects;
+6. structural conflict reports for recursive merges.
 
 ### Configuration paths
 
@@ -87,7 +88,6 @@ test {
 }
 ```
 
-
 ### Recursive merge
 
 ```mbt check
@@ -122,6 +122,38 @@ test {
 When both values at the same path are objects, their fields are merged
 recursively. Later arrays, scalars, and conflicting types replace earlier
 values.
+
+### Conflict reports
+
+```mbt check
+///|
+test {
+  let defaults = @configscope.ConfigValue::object(
+    Map([
+      (
+        "limits",
+        @configscope.ConfigValue::object(
+          Map([("requests", @configscope.ConfigValue::number(100.0))]),
+        ),
+      ),
+    ]),
+  )
+  let production = @configscope.ConfigValue::object(
+    Map([("limits", @configscope.ConfigValue::number(10.0))]),
+  )
+  let report = defaults.deep_merge_with_report(production)
+  inspect(report.conflict_count(), content="1")
+  let conflict = report.conflict(0).unwrap()
+  inspect(conflict.path().to_string(), content="limits")
+  inspect(conflict.earlier_kind().to_string(), content="object")
+  inspect(conflict.later_kind().to_string(), content="number")
+}
+```
+
+Conflict reporting is limited to structural changes between objects and
+non-object values. Compatible scalar replacements and array replacements remain
+normal later-layer overrides. A conflict at the configuration root uses an
+empty path string.
 
 Not implemented yet: provenance tracking, explanations, diff, audit rules,
 JSON text adapters, and the CLI.

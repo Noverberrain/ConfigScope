@@ -53,6 +53,14 @@ pub fn ConfigPath::to_string(self : ConfigPath) -> String {
 }
 
 ///|
+/// Create an internal path from merge traversal segments.
+///
+/// An empty segment array represents a conflict at the configuration root.
+fn config_path_from_segments(segments : Array[String]) -> ConfigPath {
+  { segments: segments.copy() }
+}
+
+///|
 /// Render a concise diagnostic for an invalid path.
 pub fn ConfigPathError::to_string(self : ConfigPathError) -> String {
   match self {

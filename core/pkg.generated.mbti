@@ -11,6 +11,15 @@ pub fn parse_path(String) -> Result[ConfigPath, ConfigPathError]
 // Errors
 
 // Types and methods
+pub struct ConfigConflict {
+  path : ConfigPath
+  earlier_kind : ConfigValueKind
+  later_kind : ConfigValueKind
+} derive(Eq, @debug.Debug)
+pub fn ConfigConflict::earlier_kind(Self) -> ConfigValueKind
+pub fn ConfigConflict::later_kind(Self) -> ConfigValueKind
+pub fn ConfigConflict::path(Self) -> ConfigPath
+
 pub struct ConfigPath {
   segments : Array[String]
 } derive(Eq, @debug.Debug)
@@ -34,6 +43,7 @@ pub fn ConfigValue::as_string(Self) -> String?
 pub fn ConfigValue::boolean(Bool) -> Self
 pub fn ConfigValue::contains_field(Self, String) -> Bool
 pub fn ConfigValue::deep_merge(Self, Self) -> Self
+pub fn ConfigValue::deep_merge_with_report(Self, Self) -> MergeResult
 pub fn ConfigValue::element(Self, Int) -> Self?
 pub fn ConfigValue::empty_object() -> Self
 pub fn ConfigValue::field(Self, String) -> Self?
@@ -55,6 +65,14 @@ pub enum ConfigValueKind {
   Object
 } derive(Eq, @debug.Debug)
 pub fn ConfigValueKind::to_string(Self) -> String
+
+pub struct MergeResult {
+  value : ConfigValue
+  conflicts : Array[ConfigConflict]
+} derive(Eq, @debug.Debug)
+pub fn MergeResult::conflict(Self, Int) -> ConfigConflict?
+pub fn MergeResult::conflict_count(Self) -> Int
+pub fn MergeResult::value(Self) -> ConfigValue
 
 // Type aliases
 
