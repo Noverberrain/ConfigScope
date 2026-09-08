@@ -24,7 +24,7 @@ pub fn parse_path(source : String) -> Result[ConfigPath, ConfigPathError] {
   if source.is_empty() {
     return Err(EmptyPath)
   }
-  let segments = Array::new()
+  let segments : Array[String] = []
   for index, segment in source.split(".") {
     if segment.is_empty() {
       return Err(EmptySegment(index))
