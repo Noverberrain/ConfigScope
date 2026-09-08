@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Eight foundational features are now
+The project is being built incrementally. Nine foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -16,7 +16,8 @@ available:
 5. recursive merging for nested configuration objects;
 6. structural conflict reports for recursive merges;
 7. named configuration layers that pair a source name with a value;
-8. ordered multi-layer merging with later layers taking precedence.
+8. ordered multi-layer merging with later layers taking precedence;
+9. field-level provenance for layered merge results.
 
 ### Configuration paths
 
@@ -223,5 +224,37 @@ while nested objects retain fields that are not overridden. Use
 the merged value. An empty layered configuration returns `None` from either
 merge method.
 
-Not implemented yet: per-field provenance tracking, explanations, diff, audit
-rules, JSON text adapters, and the CLI.
+### Field provenance
+
+```mbt check
+///|
+test {
+  let defaults = @configscope.ConfigLayer::new(
+    "defaults",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::number(80.0))]),
+    ),
+  )
+  let production = @configscope.ConfigLayer::new(
+    "production",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::number(8080.0))]),
+    ),
+  )
+  let result = @configscope.LayeredConfig::new([defaults, production])
+    .merge_with_provenance()
+    .unwrap()
+  inspect(
+    result.source(@configscope.parse_path("port").unwrap()).unwrap(),
+    content="production",
+  )
+}
+```
+
+`merge_with_provenance()` returns the merged value, structural conflicts, and
+the layer name that supplied each final configuration path. When nested objects
+are merged, unchanged descendants keep their earlier source while overridden
+fields receive the later layer's name. Replacing an object with a scalar (or the
+reverse) removes stale descendant entries. Empty layered configurations return
+`None`.
+Not implemented yet: explanations, diff, audit rules, JSON text adapters, and the CLI.

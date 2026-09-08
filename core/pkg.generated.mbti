@@ -81,8 +81,20 @@ pub fn LayeredConfig::empty() -> Self
 pub fn LayeredConfig::layer(Self, Int) -> ConfigLayer?
 pub fn LayeredConfig::length(Self) -> Int
 pub fn LayeredConfig::merge(Self) -> ConfigValue?
+pub fn LayeredConfig::merge_with_provenance(Self) -> LayeredMergeResult?
 pub fn LayeredConfig::merge_with_report(Self) -> MergeResult?
 pub fn LayeredConfig::new(Array[ConfigLayer]) -> Self
+
+pub struct LayeredMergeResult {
+  value : ConfigValue
+  conflicts : Array[ConfigConflict]
+  sources : Map[String, String]
+} derive(Eq, @debug.Debug)
+pub fn LayeredMergeResult::conflict(Self, Int) -> ConfigConflict?
+pub fn LayeredMergeResult::conflict_count(Self) -> Int
+pub fn LayeredMergeResult::source(Self, ConfigPath) -> String?
+pub fn LayeredMergeResult::source_count(Self) -> Int
+pub fn LayeredMergeResult::value(Self) -> ConfigValue
 
 pub struct MergeResult {
   value : ConfigValue

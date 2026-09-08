@@ -7,6 +7,7 @@ pub using @core {
   type ConfigConflict,
   type ConfigLayer,
   type LayeredConfig,
+  type LayeredMergeResult,
   type ConfigValue,
   type ConfigValueKind,
   type MergeResult,
