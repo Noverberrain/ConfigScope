@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Ten foundational features are now
+The project is being built incrementally. Eleven foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -18,7 +18,8 @@ available:
 7. named configuration layers that pair a source name with a value;
 8. ordered multi-layer merging with later layers taking precedence;
 9. field-level provenance for layered merge results;
-10. structured explanations for final configuration fields.
+10. structured explanations for final configuration fields;
+11. recursive configuration differences for added, removed, changed, and type-changed paths.
 
 ### Configuration paths
 
@@ -258,6 +259,7 @@ are merged, unchanged descendants keep their earlier source while overridden
 fields receive the later layer's name. Replacing an object with a scalar (or the
 reverse) removes stale descendant entries. Empty layered configurations return
 `None`.
+
 ### Structured explanations
 
 ```mbt check
@@ -284,4 +286,35 @@ test {
 `explain(path)` combines the final value, its `ConfigValueKind`, the canonical
 path, and the source layer name into one diagnostic result. It returns `None`
 when the path is missing or is not represented in the provenance index.
-Not implemented yet: diff, audit rules, JSON text adapters, and the CLI.
+
+### Configuration differences
+
+```mbt check
+///|
+test {
+  let before = @configscope.ConfigValue::object(
+    Map([
+      ("host", @configscope.ConfigValue::string("localhost")),
+      ("port", @configscope.ConfigValue::number(80.0)),
+    ]),
+  )
+  let after = @configscope.ConfigValue::object(
+    Map([
+      ("port", @configscope.ConfigValue::number(8080.0)),
+      ("tls", @configscope.ConfigValue::boolean(true)),
+    ]),
+  )
+  let differences = before.diff(after)
+  inspect(differences.length(), content="3")
+  inspect(differences.get(0).unwrap().path().to_string(), content="host")
+  inspect(differences.get(0).unwrap().kind().to_string(), content="removed")
+}
+```
+
+`diff(later)` recursively compares object fields and reports `Added`, `Removed`,
+`Changed`, or `TypeChanged` entries. Each entry contains its canonical path and
+optional before/after values. Arrays are compared as whole values in this
+milestone, and a root-level scalar or type difference uses an empty path string.
+Results are ordered lexicographically by path, and equal values produce an empty difference array.
+
+Not implemented yet: audit rules, JSON text adapters, and the CLI.

@@ -5,6 +5,8 @@ pub using @core {
   type ConfigPath,
   type ConfigPathError,
   type ConfigConflict,
+  type ConfigDiff,
+  type ConfigDiffKind,
   type ConfigExplanation,
   type ConfigLayer,
   type LayeredConfig,

@@ -20,6 +20,25 @@ pub fn ConfigConflict::earlier_kind(Self) -> ConfigValueKind
 pub fn ConfigConflict::later_kind(Self) -> ConfigValueKind
 pub fn ConfigConflict::path(Self) -> ConfigPath
 
+pub struct ConfigDiff {
+  path : ConfigPath
+  kind : ConfigDiffKind
+  before : ConfigValue?
+  after : ConfigValue?
+} derive(Eq, @debug.Debug)
+pub fn ConfigDiff::after(Self) -> ConfigValue?
+pub fn ConfigDiff::before(Self) -> ConfigValue?
+pub fn ConfigDiff::kind(Self) -> ConfigDiffKind
+pub fn ConfigDiff::path(Self) -> ConfigPath
+
+pub(all) enum ConfigDiffKind {
+  Added
+  Removed
+  Changed
+  TypeChanged
+} derive(Eq, @debug.Debug)
+pub fn ConfigDiffKind::to_string(Self) -> String
+
 pub struct ConfigExplanation {
   path : ConfigPath
   value : ConfigValue
@@ -62,6 +81,7 @@ pub fn ConfigValue::boolean(Bool) -> Self
 pub fn ConfigValue::contains_field(Self, String) -> Bool
 pub fn ConfigValue::deep_merge(Self, Self) -> Self
 pub fn ConfigValue::deep_merge_with_report(Self, Self) -> MergeResult
+pub fn ConfigValue::diff(Self, Self) -> Array[ConfigDiff]
 pub fn ConfigValue::element(Self, Int) -> Self?
 pub fn ConfigValue::empty_object() -> Self
 pub fn ConfigValue::field(Self, String) -> Self?
