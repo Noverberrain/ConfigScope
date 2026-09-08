@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Seven foundational features are now
+The project is being built incrementally. Eight foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -15,7 +15,8 @@ available:
 4. shallow configuration merging with later values taking precedence;
 5. recursive merging for nested configuration objects;
 6. structural conflict reports for recursive merges;
-7. named configuration layers that pair a source name with a value.
+7. named configuration layers that pair a source name with a value;
+8. ordered multi-layer merging with later layers taking precedence.
 
 ### Configuration paths
 
@@ -173,9 +174,40 @@ test {
 }
 ```
 
-A configuration layer currently provides only the data model needed to attach a
-stable source name to a configuration value. Multi-layer merging, per-field
-provenance tracking, and `explain` queries will be added in later milestones.
+A configuration layer attaches a stable source name to a configuration value.
+Ordered collections of these layers can be merged with `LayeredConfig`. Per-field
+provenance tracking and `explain` queries will be added in later milestones.
 
-Not implemented yet: multi-layer merge orchestration, provenance tracking,
-explanations, diff, audit rules, JSON text adapters, and the CLI.
+### Ordered layered merging
+
+```mbt check
+///|
+test {
+  let defaults = @configscope.ConfigLayer::new(
+    "defaults",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::number(80.0))]),
+    ),
+  )
+  let production = @configscope.ConfigLayer::new(
+    "production",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::number(8080.0))]),
+    ),
+  )
+  let config = @configscope.LayeredConfig::new([defaults, production])
+    .merge()
+    .unwrap()
+  inspect(config.field("port").unwrap().as_number().unwrap(), content="8080")
+}
+```
+
+`LayeredConfig` preserves the supplied order and recursively merges each layer
+from first to last. A later layer overrides an earlier value at the same path,
+while nested objects retain fields that are not overridden. Use
+`merge_with_report()` when structural conflicts should be collected alongside
+the merged value. An empty layered configuration returns `None` from either
+merge method.
+
+Not implemented yet: per-field provenance tracking, explanations, diff, audit
+rules, JSON text adapters, and the CLI.

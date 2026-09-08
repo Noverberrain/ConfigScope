@@ -74,6 +74,16 @@ pub enum ConfigValueKind {
 } derive(Eq, @debug.Debug)
 pub fn ConfigValueKind::to_string(Self) -> String
 
+pub struct LayeredConfig {
+  layers : Array[ConfigLayer]
+} derive(Eq, @debug.Debug)
+pub fn LayeredConfig::empty() -> Self
+pub fn LayeredConfig::layer(Self, Int) -> ConfigLayer?
+pub fn LayeredConfig::length(Self) -> Int
+pub fn LayeredConfig::merge(Self) -> ConfigValue?
+pub fn LayeredConfig::merge_with_report(Self) -> MergeResult?
+pub fn LayeredConfig::new(Array[ConfigLayer]) -> Self
+
 pub struct MergeResult {
   value : ConfigValue
   conflicts : Array[ConfigConflict]

@@ -25,6 +25,8 @@ pub using @core {type ConfigValue}
 
 pub using @core {type ConfigValueKind}
 
+pub using @core {type LayeredConfig}
+
 pub using @core {type MergeResult}
 
 // Traits

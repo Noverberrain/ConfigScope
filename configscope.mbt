@@ -6,6 +6,7 @@ pub using @core {
   type ConfigPathError,
   type ConfigConflict,
   type ConfigLayer,
+  type LayeredConfig,
   type ConfigValue,
   type ConfigValueKind,
   type MergeResult,
