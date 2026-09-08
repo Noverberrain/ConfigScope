@@ -20,6 +20,14 @@ pub fn ConfigConflict::earlier_kind(Self) -> ConfigValueKind
 pub fn ConfigConflict::later_kind(Self) -> ConfigValueKind
 pub fn ConfigConflict::path(Self) -> ConfigPath
 
+pub struct ConfigLayer {
+  name : String
+  value : ConfigValue
+} derive(Eq, @debug.Debug)
+pub fn ConfigLayer::name(Self) -> String
+pub fn ConfigLayer::new(String, ConfigValue) -> Self
+pub fn ConfigLayer::value(Self) -> ConfigValue
+
 pub struct ConfigPath {
   segments : Array[String]
 } derive(Eq, @debug.Debug)

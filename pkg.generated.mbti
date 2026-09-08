@@ -15,6 +15,8 @@ pub fn parse_path(String) -> Result[@core.ConfigPath, @core.ConfigPathError]
 // Type aliases
 pub using @core {type ConfigConflict}
 
+pub using @core {type ConfigLayer}
+
 pub using @core {type ConfigPath}
 
 pub using @core {type ConfigPathError}

@@ -563,3 +563,32 @@ test "merge report catches a scalar replaced by an object" {
     "json",
   )
 }
+
+///|
+test "configuration layers keep a source name and value" {
+  let config = @configscope.ConfigValue::object(
+    Map([("port", @configscope.ConfigValue::number(8080.0))]),
+  )
+  let layer = @configscope.ConfigLayer::new("production", config)
+  assert_eq(layer.name(), "production")
+  assert_eq(layer.value(), config)
+  assert_eq(
+    layer
+    .value()
+    .get(@configscope.parse_path("port").unwrap())
+    .unwrap()
+    .as_number()
+    .unwrap(),
+    8080.0,
+  )
+}
+
+///|
+test "configuration layers distinguish sources with equal values" {
+  let config = @configscope.ConfigValue::string("same")
+  let defaults = @configscope.ConfigLayer::new("defaults", config)
+  let workstation = @configscope.ConfigLayer::new("local", config)
+  assert_eq(defaults.value(), workstation.value())
+  assert_true(defaults.name() != workstation.name())
+  assert_true(defaults != workstation)
+}

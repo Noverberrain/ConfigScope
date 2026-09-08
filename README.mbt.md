@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Six foundational features are now
+The project is being built incrementally. Seven foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -14,7 +14,8 @@ available:
 3. nested value lookup through parsed configuration paths;
 4. shallow configuration merging with later values taking precedence;
 5. recursive merging for nested configuration objects;
-6. structural conflict reports for recursive merges.
+6. structural conflict reports for recursive merges;
+7. named configuration layers that pair a source name with a value.
 
 ### Configuration paths
 
@@ -169,5 +170,26 @@ non-object values. Compatible scalar replacements and array replacements remain
 normal later-layer overrides. A conflict at the configuration root uses an
 empty path string.
 
-Not implemented yet: provenance tracking, explanations, diff, audit rules,
-JSON text adapters, and the CLI.
+### Named configuration layers
+
+```mbt check
+///|
+test {
+  let value = @configscope.ConfigValue::object(
+    Map([("region", @configscope.ConfigValue::string("eu-west"))]),
+  )
+  let production = @configscope.ConfigLayer::new("production", value)
+  inspect(production.name(), content="production")
+  inspect(
+    production.value().field("region").unwrap().as_string().unwrap(),
+    content="eu-west",
+  )
+}
+```
+
+A configuration layer currently provides only the data model needed to attach a
+stable source name to a configuration value. Multi-layer merging, per-field
+provenance tracking, and `explain` queries will be added in later milestones.
+
+Not implemented yet: multi-layer merge orchestration, provenance tracking,
+explanations, diff, audit rules, JSON text adapters, and the CLI.
