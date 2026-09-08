@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Nine foundational features are now
+The project is being built incrementally. Ten foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -17,7 +17,8 @@ available:
 6. structural conflict reports for recursive merges;
 7. named configuration layers that pair a source name with a value;
 8. ordered multi-layer merging with later layers taking precedence;
-9. field-level provenance for layered merge results.
+9. field-level provenance for layered merge results;
+10. structured explanations for final configuration fields.
 
 ### Configuration paths
 
@@ -191,7 +192,7 @@ test {
 
 A configuration layer attaches a stable source name to a configuration value.
 Ordered collections of these layers can be merged with `LayeredConfig`. Per-field
-provenance tracking and `explain` queries will be added in later milestones.
+provenance tracking and `explain` queries are available on merge results.
 
 ### Ordered layered merging
 
@@ -257,4 +258,30 @@ are merged, unchanged descendants keep their earlier source while overridden
 fields receive the later layer's name. Replacing an object with a scalar (or the
 reverse) removes stale descendant entries. Empty layered configurations return
 `None`.
-Not implemented yet: explanations, diff, audit rules, JSON text adapters, and the CLI.
+### Structured explanations
+
+```mbt check
+///|
+test {
+  let layer = @configscope.ConfigLayer::new(
+    "production",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::number(8080.0))]),
+    ),
+  )
+  let result = @configscope.LayeredConfig::new([layer])
+    .merge_with_provenance()
+    .unwrap()
+  let explanation = result
+    .explain(@configscope.parse_path("port").unwrap())
+    .unwrap()
+  inspect(explanation.path().to_string(), content="port")
+  inspect(explanation.kind().to_string(), content="number")
+  inspect(explanation.source(), content="production")
+}
+```
+
+`explain(path)` combines the final value, its `ConfigValueKind`, the canonical
+path, and the source layer name into one diagnostic result. It returns `None`
+when the path is missing or is not represented in the provenance index.
+Not implemented yet: diff, audit rules, JSON text adapters, and the CLI.
