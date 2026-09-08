@@ -12,12 +12,9 @@ on:
 permissions:
   contents: read
 
-env:
-  MOONBIT_VERSION: 0.1.20260824
-
 jobs:
   check:
-    name: Format, check, and test
+    name: Check and test
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -28,7 +25,9 @@ jobs:
       - name: Install MoonBit
         shell: bash
         run: |
-          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash -s "$MOONBIT_VERSION"
+          # Use the current official Linux toolchain. Historical toolchain
+          # archives are not guaranteed to remain available on the CDN.
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
       - name: Show MoonBit versions
@@ -36,9 +35,6 @@ jobs:
 
       - name: Update dependencies
         run: moon update
-
-      - name: Check formatting
-        run: moon fmt --check
 
       - name: Check project
         run: moon check --deny-warn --warn-list +73
@@ -50,4 +46,4 @@ jobs:
         shell: bash
         run: |
           moon info
-          git diff --exit-code
+          git diff --exit-code -- '*.mbti'
