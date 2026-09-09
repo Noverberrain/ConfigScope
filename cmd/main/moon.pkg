@@ -5,7 +5,7 @@
 pkgtype(kind: "executable")
 
 import {
-  "Noverberrain/configscope",
+  "Noverberrain/configscope/cmd/cli",
   "moonbitlang/core/env",
-  "moonbitlang/x/fs",
+  "moonbitlang/x/sys",
 }

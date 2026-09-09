@@ -1,0 +1,4 @@
+import {
+  "Noverberrain/configscope",
+  "moonbitlang/x/fs",
+}
