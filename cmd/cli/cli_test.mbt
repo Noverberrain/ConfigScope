@@ -60,3 +60,70 @@ test "get reports malformed JSON" {
 test "get reports invalid arguments" {
   assert_eq(@cli.run(["configscope", "audit"]), Err(@cli.usage()))
 }
+
+///|
+test "audit accepts required and type rules" {
+  assert_eq(
+    @cli.run([
+      "configscope", "audit", "cmd/main/testdata/basic.json", "--required", "server.host",
+      "--type", "server.port:number",
+    ]),
+    Ok("audit passed"),
+  )
+}
+
+///|
+test "audit reports all issues in path order" {
+  assert_eq(
+    @cli.run([
+      "configscope", "audit", "cmd/main/testdata/basic.json", "--required", "server.missing",
+      "--type", "server.host:number",
+    ]),
+    Err(
+      "configuration path 'server.host' expected number, but found string\n" +
+      "required configuration path 'server.missing' is missing",
+    ),
+  )
+}
+
+///|
+test "audit rejects unknown kinds" {
+  assert_eq(
+    @cli.run([
+      "configscope", "audit", "cmd/main/testdata/basic.json", "--type", "server.port:integer",
+    ]),
+    Err(
+      "unknown configuration kind 'integer'; expected null, boolean, number, string, array, or object",
+    ),
+  )
+}
+
+///|
+test "audit requires rules and recognizes options" {
+  assert_eq(
+    @cli.run(["configscope", "audit", "cmd/main/testdata/basic.json"]),
+    Err("audit requires at least one --required or --type rule"),
+  )
+  assert_eq(
+    @cli.run([
+      "configscope", "audit", "cmd/main/testdata/basic.json", "--optional", "server.host",
+    ]),
+    Err("unknown audit option '--optional'"),
+  )
+}
+
+///|
+test "audit rejects incomplete options" {
+  assert_eq(
+    @cli.run([
+      "configscope", "audit", "cmd/main/testdata/basic.json", "--required",
+    ]),
+    Err("missing path after --required"),
+  )
+  assert_eq(
+    @cli.run([
+      "configscope", "audit", "cmd/main/testdata/basic.json", "--type", "server.port",
+    ]),
+    Err("type rule must use <path>:<kind>"),
+  )
+}

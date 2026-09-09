@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Thirteen foundational features are now
+The project is being built incrementally. Fourteen foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -21,7 +21,8 @@ available:
 10. structured explanations for final configuration fields;
 11. recursive configuration differences for added, removed, changed, and type-changed paths;
 12. required-path and type audit rules with deterministic diagnostics;
-13. a native `get` CLI command for querying JSON files.
+13. a native `get` CLI command for querying JSON files;
+14. an `audit` CLI command for required-path and type checks.
 
 ### Configuration paths
 
@@ -375,4 +376,15 @@ It also supports nested arrays and scalar values, so the same command can query
 `features` and receive `["audit","diff"]` as JSON output. Missing paths and
 invalid command arguments produce a diagnostic instead of a value.
 
-Not implemented yet: the `audit`, `merge`, `diff`, and `explain` CLI commands.
+### The `audit` command
+
+The audit command applies one or more required-path or type rules to a JSON
+file. It reports every issue in path order and exits with status `1` when a
+rule fails:
+
+```text
+moon run cmd/main -- audit cmd/main/testdata/basic.json --required server.host --type server.port:number
+audit passed
+```
+
+Not implemented yet: the `merge`, `diff`, and `explain` CLI commands.
