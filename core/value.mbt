@@ -1,6 +1,6 @@
 ///|
 /// The JSON-compatible kinds represented by a configuration value.
-pub enum ConfigValueKind {
+pub(all) enum ConfigValueKind {
   Null
   Boolean
   Number

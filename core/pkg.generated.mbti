@@ -14,21 +14,28 @@ pub fn parse_path(String) -> Result[ConfigPath, ConfigPathError]
 pub struct ConfigAuditIssue {
   path : ConfigPath
   kind : ConfigAuditIssueKind
+  expected_kind : ConfigValueKind?
+  actual_kind : ConfigValueKind?
 } derive(Eq, @debug.Debug)
+pub fn ConfigAuditIssue::actual_kind(Self) -> ConfigValueKind?
+pub fn ConfigAuditIssue::expected_kind(Self) -> ConfigValueKind?
 pub fn ConfigAuditIssue::kind(Self) -> ConfigAuditIssueKind
 pub fn ConfigAuditIssue::message(Self) -> String
 pub fn ConfigAuditIssue::path(Self) -> ConfigPath
 
 pub(all) enum ConfigAuditIssueKind {
   MissingRequired
+  TypeMismatch
 } derive(Eq, @debug.Debug)
 pub fn ConfigAuditIssueKind::to_string(Self) -> String
 
 pub(all) enum ConfigAuditRule {
   Required(ConfigPath)
+  TypeIs(ConfigPath, ConfigValueKind)
 } derive(Eq, @debug.Debug)
 pub fn ConfigAuditRule::path(Self) -> ConfigPath
 pub fn ConfigAuditRule::required(ConfigPath) -> Self
+pub fn ConfigAuditRule::type_is(ConfigPath, ConfigValueKind) -> Self
 
 pub struct ConfigConflict {
   path : ConfigPath
@@ -114,7 +121,7 @@ pub fn ConfigValue::number(Double) -> Self
 pub fn ConfigValue::object(Map[String, Self]) -> Self
 pub fn ConfigValue::string(String) -> Self
 
-pub enum ConfigValueKind {
+pub(all) enum ConfigValueKind {
   Null
   Boolean
   Number

@@ -1,16 +1,18 @@
 ///|
 /// A validation rule applied to a configuration value.
 ///
-/// The first audit milestone supports required paths. Additional rule kinds can
-/// be added without changing the `ConfigValue::audit` entry point.
+/// Rules can require a path to exist or require an existing value to have a
+/// particular JSON-compatible kind.
 pub(all) enum ConfigAuditRule {
   Required(ConfigPath)
+  TypeIs(ConfigPath, ConfigValueKind)
 } derive(Eq, Debug)
 
 ///|
 /// Describes why a configuration audit reported an issue.
 pub(all) enum ConfigAuditIssueKind {
   MissingRequired
+  TypeMismatch
 } derive(Eq, Debug)
 
 ///|
@@ -18,6 +20,8 @@ pub(all) enum ConfigAuditIssueKind {
 pub struct ConfigAuditIssue {
   path : ConfigPath
   kind : ConfigAuditIssueKind
+  expected_kind : ConfigValueKind?
+  actual_kind : ConfigValueKind?
 } derive(Eq, Debug)
 
 ///|
@@ -27,10 +31,20 @@ pub fn ConfigAuditRule::required(path : ConfigPath) -> ConfigAuditRule {
 }
 
 ///|
+/// Create a rule that requires an existing value to have a particular kind.
+pub fn ConfigAuditRule::type_is(
+  path : ConfigPath,
+  expected_kind : ConfigValueKind,
+) -> ConfigAuditRule {
+  TypeIs(path, expected_kind)
+}
+
+///|
 /// Return the path inspected by this rule.
 pub fn ConfigAuditRule::path(self : ConfigAuditRule) -> ConfigPath {
   match self {
     Required(path) => path
+    TypeIs(path, _) => path
   }
 }
 
@@ -47,10 +61,31 @@ pub fn ConfigAuditIssue::kind(self : ConfigAuditIssue) -> ConfigAuditIssueKind {
 }
 
 ///|
+/// Return the expected value kind for a type mismatch.
+///
+/// Other issue categories return `None`.
+pub fn ConfigAuditIssue::expected_kind(
+  self : ConfigAuditIssue,
+) -> ConfigValueKind? {
+  self.expected_kind
+}
+
+///|
+/// Return the actual value kind for a type mismatch.
+///
+/// Other issue categories return `None`.
+pub fn ConfigAuditIssue::actual_kind(
+  self : ConfigAuditIssue,
+) -> ConfigValueKind? {
+  self.actual_kind
+}
+
+///|
 /// Return a stable lowercase name for this audit issue category.
 pub fn ConfigAuditIssueKind::to_string(self : ConfigAuditIssueKind) -> String {
   match self {
     MissingRequired => "missing_required"
+    TypeMismatch => "type_mismatch"
   }
 }
 
@@ -60,14 +95,21 @@ pub fn ConfigAuditIssue::message(self : ConfigAuditIssue) -> String {
   match self.kind {
     MissingRequired =>
       "required configuration path '\{self.path.to_string()}' is missing"
+    TypeMismatch => {
+      let expected = self.expected_kind.unwrap().to_string()
+      let actual = self.actual_kind.unwrap().to_string()
+      "configuration path '\{self.path.to_string()}' expected \{expected}, but found \{actual}"
+    }
   }
 }
 
 ///|
 /// Apply validation rules to this configuration value.
 ///
-/// Required paths count as present even when their value is `null`. Issues are
-/// ordered lexicographically by path so diagnostics remain deterministic.
+/// Required paths count as present even when their value is `null`. Type rules
+/// only inspect paths that exist, allowing a separate required rule to control
+/// missing-path diagnostics. Issues are ordered lexicographically by path so
+/// diagnostics remain deterministic.
 pub fn ConfigValue::audit(
   self : ConfigValue,
   rules : Array[ConfigAuditRule],
@@ -77,7 +119,27 @@ pub fn ConfigValue::audit(
     match rule {
       Required(path) =>
         if self.get(path) is None {
-          issues.push({ path, kind: MissingRequired })
+          issues.push({
+            path,
+            kind: MissingRequired,
+            expected_kind: None,
+            actual_kind: None,
+          })
+        }
+      TypeIs(path, expected_kind) =>
+        match self.get(path) {
+          Some(value) => {
+            let actual_kind = value.kind()
+            if actual_kind != expected_kind {
+              issues.push({
+                path,
+                kind: TypeMismatch,
+                expected_kind: Some(expected_kind),
+                actual_kind: Some(actual_kind),
+              })
+            }
+          }
+          None => ()
         }
     }
   }

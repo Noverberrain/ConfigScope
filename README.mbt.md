@@ -20,7 +20,7 @@ available:
 9. field-level provenance for layered merge results;
 10. structured explanations for final configuration fields;
 11. recursive configuration differences for added, removed, changed, and type-changed paths;
-12. required-path audit rules with deterministic diagnostics.
+12. required-path and type audit rules with deterministic diagnostics.
 
 ### Configuration paths
 
@@ -341,6 +341,10 @@ test {
     @configscope.ConfigAuditRule::required(
       @configscope.parse_path("server.port").unwrap(),
     ),
+    @configscope.ConfigAuditRule::type_is(
+      @configscope.parse_path("server.host").unwrap(),
+      String,
+    ),
   ])
   inspect(issues.length(), content="1")
   inspect(issues.get(0).unwrap().path().to_string(), content="server.port")
@@ -349,8 +353,11 @@ test {
 ```
 
 `audit(rules)` applies reusable validation rules to a configuration value. The
-first rule type requires a parsed path to exist. A path whose final value is
-`null` still counts as present. Missing-path issues include a stable kind,
+`required(path)` rule requires a parsed path to exist. A path whose final value
+is `null` still counts as present. The `type_is(path, kind)` rule checks the
+kind of an existing value and reports its expected and actual kinds. Type rules
+skip missing paths so they can be combined with `required(path)` without
+producing duplicate missing-path diagnostics. Issues include a stable kind,
 canonical path, and human-readable message, and results are sorted by path.
 
-Not implemented yet: additional audit rules, JSON text adapters, and the CLI.
+Not implemented yet: JSON text adapters and the CLI.
