@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Eleven foundational features are now
+The project is being built incrementally. Twelve foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -19,7 +19,8 @@ available:
 8. ordered multi-layer merging with later layers taking precedence;
 9. field-level provenance for layered merge results;
 10. structured explanations for final configuration fields;
-11. recursive configuration differences for added, removed, changed, and type-changed paths.
+11. recursive configuration differences for added, removed, changed, and type-changed paths;
+12. required-path audit rules with deterministic diagnostics.
 
 ### Configuration paths
 
@@ -301,6 +302,41 @@ test {
 `Changed`, or `TypeChanged` entries. Each entry contains its canonical path and
 optional before/after values. Arrays are compared as whole values in this
 milestone, and a root-level scalar or type difference uses an empty path string.
-Results are ordered lexicographically by path, and equal values produce an empty difference array.
+Results are ordered lexicographically by path, and equal values produce an empty
+difference array.
 
-Not implemented yet: audit rules, JSON text adapters, and the CLI.
+### Required-path audits
+
+```mbt check
+///|
+test {
+  let value = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("host", @configscope.ConfigValue::string("localhost"))]),
+        ),
+      ),
+    ]),
+  )
+  let issues = value.audit([
+    @configscope.ConfigAuditRule::required(
+      @configscope.parse_path("server.host").unwrap(),
+    ),
+    @configscope.ConfigAuditRule::required(
+      @configscope.parse_path("server.port").unwrap(),
+    ),
+  ])
+  inspect(issues.length(), content="1")
+  inspect(issues.get(0).unwrap().path().to_string(), content="server.port")
+  inspect(issues.get(0).unwrap().kind().to_string(), content="missing_required")
+}
+```
+
+`audit(rules)` applies reusable validation rules to a configuration value. The
+first rule type requires a parsed path to exist. A path whose final value is
+`null` still counts as present. Missing-path issues include a stable kind,
+canonical path, and human-readable message, and results are sorted by path.
+
+Not implemented yet: additional audit rules, JSON text adapters, and the CLI.

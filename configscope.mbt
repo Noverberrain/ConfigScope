@@ -3,6 +3,9 @@
 ///|
 pub using @core {
   type ConfigPath,
+  type ConfigAuditIssue,
+  type ConfigAuditIssueKind,
+  type ConfigAuditRule,
   type ConfigPathError,
   type ConfigConflict,
   type ConfigDiff,

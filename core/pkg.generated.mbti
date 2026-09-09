@@ -11,6 +11,25 @@ pub fn parse_path(String) -> Result[ConfigPath, ConfigPathError]
 // Errors
 
 // Types and methods
+pub struct ConfigAuditIssue {
+  path : ConfigPath
+  kind : ConfigAuditIssueKind
+} derive(Eq, @debug.Debug)
+pub fn ConfigAuditIssue::kind(Self) -> ConfigAuditIssueKind
+pub fn ConfigAuditIssue::message(Self) -> String
+pub fn ConfigAuditIssue::path(Self) -> ConfigPath
+
+pub(all) enum ConfigAuditIssueKind {
+  MissingRequired
+} derive(Eq, @debug.Debug)
+pub fn ConfigAuditIssueKind::to_string(Self) -> String
+
+pub(all) enum ConfigAuditRule {
+  Required(ConfigPath)
+} derive(Eq, @debug.Debug)
+pub fn ConfigAuditRule::path(Self) -> ConfigPath
+pub fn ConfigAuditRule::required(ConfigPath) -> Self
+
 pub struct ConfigConflict {
   path : ConfigPath
   earlier_kind : ConfigValueKind
@@ -77,6 +96,7 @@ pub fn ConfigValue::array(Array[Self]) -> Self
 pub fn ConfigValue::as_boolean(Self) -> Bool?
 pub fn ConfigValue::as_number(Self) -> Double?
 pub fn ConfigValue::as_string(Self) -> String?
+pub fn ConfigValue::audit(Self, Array[ConfigAuditRule]) -> Array[ConfigAuditIssue]
 pub fn ConfigValue::boolean(Bool) -> Self
 pub fn ConfigValue::contains_field(Self, String) -> Bool
 pub fn ConfigValue::deep_merge(Self, Self) -> Self

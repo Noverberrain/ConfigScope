@@ -1078,3 +1078,87 @@ test "configuration diff order is independent of object insertion order" {
   assert_eq(differences.get(1).unwrap().path().to_string(), "middle")
   assert_eq(differences.get(2).unwrap().path().to_string(), "zebra")
 }
+
+///|
+test "required-path audit accepts present values" {
+  let value = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("host", @configscope.ConfigValue::string("localhost"))]),
+        ),
+      ),
+    ]),
+  )
+  let rule = @configscope.ConfigAuditRule::required(
+    @configscope.parse_path("server.host").unwrap(),
+  )
+  assert_eq(rule.path().to_string(), "server.host")
+  assert_eq(value.audit([rule]).length(), 0)
+}
+
+///|
+test "required-path audit reports missing nested values" {
+  let value = @configscope.ConfigValue::object(
+    Map([
+      (
+        "server",
+        @configscope.ConfigValue::object(
+          Map([("port", @configscope.ConfigValue::number(8080.0))]),
+        ),
+      ),
+    ]),
+  )
+  let issue = value
+    .audit([
+      @configscope.ConfigAuditRule::required(
+        @configscope.parse_path("server.host").unwrap(),
+      ),
+    ])
+    .get(0)
+    .unwrap()
+  assert_eq(issue.path().to_string(), "server.host")
+  assert_eq(issue.kind().to_string(), "missing_required")
+  assert_eq(
+    issue.message(),
+    "required configuration path 'server.host' is missing",
+  )
+}
+
+///|
+test "required-path audit treats null as present" {
+  let value = @configscope.ConfigValue::object(
+    Map([("token", @configscope.ConfigValue::null())]),
+  )
+  let issues = value.audit([
+    @configscope.ConfigAuditRule::required(
+      @configscope.parse_path("token").unwrap(),
+    ),
+  ])
+  assert_eq(issues.length(), 0)
+}
+
+///|
+test "required-path audit reports each missing rule" {
+  let value = @configscope.ConfigValue::empty_object()
+  let issues = value.audit([
+    @configscope.ConfigAuditRule::required(
+      @configscope.parse_path("server.host").unwrap(),
+    ),
+    @configscope.ConfigAuditRule::required(
+      @configscope.parse_path("database.url").unwrap(),
+    ),
+  ])
+  assert_eq(issues.length(), 2)
+  assert_eq(issues.get(0).unwrap().path().to_string(), "database.url")
+  assert_eq(issues.get(1).unwrap().path().to_string(), "server.host")
+}
+
+///|
+test "audit issue kind name is stable" {
+  assert_eq(
+    @configscope.ConfigAuditIssueKind::MissingRequired.to_string(),
+    "missing_required",
+  )
+}

@@ -13,6 +13,12 @@ pub fn parse_path(String) -> Result[@core.ConfigPath, @core.ConfigPathError]
 // Types and methods
 
 // Type aliases
+pub using @core {type ConfigAuditIssue}
+
+pub using @core {type ConfigAuditIssueKind}
+
+pub using @core {type ConfigAuditRule}
+
 pub using @core {type ConfigConflict}
 
 pub using @core {type ConfigDiff}
