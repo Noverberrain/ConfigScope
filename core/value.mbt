@@ -97,6 +97,12 @@ pub fn ConfigValue::string(value : String) -> ConfigValue {
 }
 
 ///|
+/// Render this configuration value as compact JSON text.
+pub fn ConfigValue::to_json_string(self : ConfigValue) -> String {
+  self.raw.stringify()
+}
+
+///|
 /// Construct an array configuration value.
 ///
 /// The input array is copied into the private representation.

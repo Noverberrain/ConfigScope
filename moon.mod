@@ -16,3 +16,7 @@ keywords = [ "configuration", "provenance", "validation", "developer-tools" ]
 preferred_target = "wasm-gc"
 
 description = "Explainable layered configuration merging and auditing for MoonBit"
+
+import {
+  "moonbitlang/x@0.5.1",
+}

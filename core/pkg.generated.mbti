@@ -122,6 +122,7 @@ pub fn ConfigValue::number(Double) -> Self
 pub fn ConfigValue::object(Map[String, Self]) -> Self
 pub fn ConfigValue::parse_json(String) -> Self raise @json.ParseError
 pub fn ConfigValue::string(String) -> Self
+pub fn ConfigValue::to_json_string(Self) -> String
 
 pub(all) enum ConfigValueKind {
   Null

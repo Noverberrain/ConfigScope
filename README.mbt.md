@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Twelve foundational features are now
+The project is being built incrementally. Thirteen foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -20,7 +20,8 @@ available:
 9. field-level provenance for layered merge results;
 10. structured explanations for final configuration fields;
 11. recursive configuration differences for added, removed, changed, and type-changed paths;
-12. required-path and type audit rules with deterministic diagnostics.
+12. required-path and type audit rules with deterministic diagnostics;
+13. a native `get` CLI command for querying JSON files.
 
 ### Configuration paths
 
@@ -360,4 +361,18 @@ skip missing paths so they can be combined with `required(path)` without
 producing duplicate missing-path diagnostics. Issues include a stable kind,
 canonical path, and human-readable message, and results are sorted by path.
 
-Not implemented yet: JSON text adapters and the CLI.
+### The `get` command
+
+The first CLI command reads a JSON file, resolves a dot-separated path, and
+prints the selected value as JSON:
+
+```text
+moon run cmd/main -- get cmd/main/testdata/basic.json server.port
+8080
+```
+
+It also supports nested arrays and scalar values, so the same command can query
+`features` and receive `["audit","diff"]` as JSON output. Missing paths and
+invalid command arguments produce a diagnostic instead of a value.
+
+Not implemented yet: the `audit`, `merge`, `diff`, and `explain` CLI commands.

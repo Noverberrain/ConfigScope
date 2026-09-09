@@ -3,3 +3,9 @@
 // }
 
 pkgtype(kind: "executable")
+
+import {
+  "Noverberrain/configscope",
+  "moonbitlang/core/env",
+  "moonbitlang/x/fs",
+}
