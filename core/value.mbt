@@ -351,3 +351,13 @@ pub fn ConfigValue::deep_merge(
 ) -> ConfigValue {
   { raw: deep_merge_raw(self.raw, later.raw) }
 }
+
+///|
+/// Parse a JSON text into a configuration value.
+///
+/// The parser accepts every JSON value, including a root scalar or array.
+pub fn ConfigValue::parse_json(
+  source : String,
+) -> ConfigValue raise @json.ParseError {
+  { raw: @json.parse(source) }
+}
