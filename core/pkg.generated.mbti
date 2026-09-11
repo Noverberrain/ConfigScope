@@ -38,6 +38,35 @@ pub fn ConfigAuditRule::path(Self) -> ConfigPath
 pub fn ConfigAuditRule::required(ConfigPath) -> Self
 pub fn ConfigAuditRule::type_is(ConfigPath, ConfigValueKind) -> Self
 
+pub struct ConfigCompatibilityChange {
+  difference : ConfigDiff
+  impact : ConfigCompatibilityImpact
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityChange::after(Self) -> ConfigValue?
+pub fn ConfigCompatibilityChange::before(Self) -> ConfigValue?
+pub fn ConfigCompatibilityChange::difference_kind(Self) -> ConfigDiffKind
+pub fn ConfigCompatibilityChange::impact(Self) -> ConfigCompatibilityImpact
+pub fn ConfigCompatibilityChange::message(Self) -> String
+pub fn ConfigCompatibilityChange::path(Self) -> ConfigPath
+
+pub(all) enum ConfigCompatibilityImpact {
+  Compatible
+  Behavioral
+  Breaking
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityImpact::to_string(Self) -> String
+
+pub struct ConfigCompatibilityReport {
+  changes : Array[ConfigCompatibilityChange]
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityReport::behavioral_count(Self) -> Int
+pub fn ConfigCompatibilityReport::breaking_count(Self) -> Int
+pub fn ConfigCompatibilityReport::change(Self, Int) -> ConfigCompatibilityChange?
+pub fn ConfigCompatibilityReport::change_count(Self) -> Int
+pub fn ConfigCompatibilityReport::changes(Self) -> Array[ConfigCompatibilityChange]
+pub fn ConfigCompatibilityReport::compatible_count(Self) -> Int
+pub fn ConfigCompatibilityReport::is_compatible(Self) -> Bool
+
 pub struct ConfigConflict {
   path : ConfigPath
   earlier_kind : ConfigValueKind
@@ -106,6 +135,7 @@ pub fn ConfigValue::as_number(Self) -> Double?
 pub fn ConfigValue::as_string(Self) -> String?
 pub fn ConfigValue::audit(Self, Array[ConfigAuditRule]) -> Array[ConfigAuditIssue]
 pub fn ConfigValue::boolean(Bool) -> Self
+pub fn ConfigValue::compatibility_with(Self, Self) -> ConfigCompatibilityReport
 pub fn ConfigValue::contains_field(Self, String) -> Bool
 pub fn ConfigValue::deep_merge(Self, Self) -> Self
 pub fn ConfigValue::deep_merge_with_report(Self, Self) -> MergeResult

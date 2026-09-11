@@ -1,29 +1,62 @@
 # ConfigScope
 
-ConfigScope is a MoonBit-native toolkit for explainable layered configuration.
-It will merge configuration layers while retaining enough provenance to explain
-where every final value came from.
+ConfigScope is a MoonBit-native configuration contract compatibility checker.
+It compares two materialized JSON configuration snapshots and identifies which
+changes are compatible, behavioral, or breaking before a service is released.
 
-## Current milestone
+## Current direction
 
-The project is being built incrementally. Fifteen foundational features are now
-available:
+The project is being refocused from general configuration merging to one
+specific release-safety problem: can a new configuration version still be used
+by the existing application contract?
 
-1. simple dot-separated configuration paths;
-2. a JSON-compatible configuration value model;
-3. nested value lookup through parsed configuration paths;
-4. shallow configuration merging with later values taking precedence;
-5. recursive merging for nested configuration objects;
-6. structural conflict reports for recursive merges;
-7. named configuration layers that pair a source name with a value;
-8. ordered multi-layer merging with later layers taking precedence;
-9. field-level provenance for layered merge results;
-10. structured explanations for final configuration fields;
-11. recursive configuration differences for added, removed, changed, and type-changed paths;
-12. required-path and type audit rules with deterministic diagnostics;
-13. a native `get` CLI command for querying JSON files;
-14. an `audit` CLI command for required-path and type checks;
-15. a `merge` CLI command for combining JSON configuration layers.
+The first compatibility milestone provides:
+
+1. deterministic recursive comparison of JSON-compatible configuration values;
+2. stable classification of added, changed, removed, and type-changed paths;
+3. a compatibility report with counts, paths, before/after values, and messages;
+4. a small public API that can later power a CI compatibility gate.
+
+The existing path, value, merge, provenance, and audit code is retained as a
+reusable JSON foundation during the migration. It is not the new project's
+primary promise.
+
+## Scope boundary
+
+ConfigScope consumes already materialized JSON values. It does not implement an
+INI/Properties parser, runtime layer resolution, secret loading, or general
+schema validation. Those concerns can be handled by a configuration loader;
+ConfigScope focuses on compatibility between released configuration versions.
+
+### Configuration compatibility
+
+The baseline model is deliberately small and predictable:
+
+- an added path is `compatible`;
+- a changed value is `behavioral`;
+- a removed or type-changed path is `breaking`.
+
+```mbt check
+///|
+test {
+  let previous = @configscope.ConfigValue::object(
+    Map([("port", @configscope.ConfigValue::number(80.0))]),
+  )
+  let next = @configscope.ConfigValue::object(
+    Map([("port", @configscope.ConfigValue::number(8080.0))]),
+  )
+  let report = previous.compatibility_with(next)
+  inspect(report.breaking_count(), content="0")
+  inspect(report.behavioral_count(), content="1")
+}
+```
+
+The report preserves deterministic path order and can be used by a future CLI
+to fail CI only when a breaking configuration change is detected. The API
+compares snapshots; it does not merge runtime layers or read files itself.
+
+The sections below document the reusable JSON foundation retained during this
+transition. They are not the project's differentiating scope.
 
 ### Configuration paths
 
@@ -363,7 +396,13 @@ skip missing paths so they can be combined with `required(path)` without
 producing duplicate missing-path diagnostics. Issues include a stable kind,
 canonical path, and human-readable message, and results are sorted by path.
 
-### The `get` command
+### Existing utility commands
+
+The repository still includes `get`, `audit`, and `merge` commands as migration
+foundation examples. They are retained for exercising the JSON value model, but
+the new project direction is the compatibility report above.
+
+#### The `get` command
 
 The first CLI command reads a JSON file, resolves a dot-separated path, and
 prints the selected value as JSON:
@@ -377,7 +416,7 @@ It also supports nested arrays and scalar values, so the same command can query
 `features` and receive `["audit","diff"]` as JSON output. Missing paths and
 invalid command arguments produce a diagnostic instead of a value.
 
-### The `audit` command
+#### The `audit` command
 
 The audit command applies one or more required-path or type rules to a JSON
 file. It reports every issue in path order and exits with status `1` when a
@@ -388,7 +427,7 @@ moon run cmd/main -- audit cmd/main/testdata/basic.json --required server.host -
 audit passed
 ```
 
-### The `merge` command
+#### The `merge` command
 
 The merge command reads JSON files from first to last and prints the recursively
 merged configuration. Later files override scalar and array values, while
@@ -399,4 +438,5 @@ moon run cmd/main -- merge cmd/main/testdata/basic.json cmd/main/testdata/produc
 {"server":{"host":"localhost","port":9090},"features":["audit","diff","merge"],"logging":{"level":"info"}}
 ```
 
-Not implemented yet: the `diff` and `explain` CLI commands.
+Next planned: compatibility policies, versioned contract files, the `compat`
+CLI command, and a GitHub Actions release gate.

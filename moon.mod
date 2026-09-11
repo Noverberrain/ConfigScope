@@ -11,11 +11,11 @@ repository = "https://github.com/Noverberrain/ConfigScope.git"
 
 license = "Apache-2.0"
 
-keywords = [ "configuration", "provenance", "validation", "developer-tools" ]
+keywords = [ "configuration", "compatibility", "json", "developer-tools" ]
 
 preferred_target = "wasm-gc"
 
-description = "Explainable layered configuration merging and auditing for MoonBit"
+description = "Configuration contract compatibility checks for MoonBit"
 
 import {
   "moonbitlang/x@0.5.1",
