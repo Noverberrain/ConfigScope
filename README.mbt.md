@@ -6,7 +6,7 @@ where every final value came from.
 
 ## Current milestone
 
-The project is being built incrementally. Fourteen foundational features are now
+The project is being built incrementally. Fifteen foundational features are now
 available:
 
 1. simple dot-separated configuration paths;
@@ -22,7 +22,8 @@ available:
 11. recursive configuration differences for added, removed, changed, and type-changed paths;
 12. required-path and type audit rules with deterministic diagnostics;
 13. a native `get` CLI command for querying JSON files;
-14. an `audit` CLI command for required-path and type checks.
+14. an `audit` CLI command for required-path and type checks;
+15. a `merge` CLI command for combining JSON configuration layers.
 
 ### Configuration paths
 
@@ -387,4 +388,15 @@ moon run cmd/main -- audit cmd/main/testdata/basic.json --required server.host -
 audit passed
 ```
 
-Not implemented yet: the `merge`, `diff`, and `explain` CLI commands.
+### The `merge` command
+
+The merge command reads JSON files from first to last and prints the recursively
+merged configuration. Later files override scalar and array values, while
+nested objects retain fields from both layers:
+
+```text
+moon run cmd/main -- merge cmd/main/testdata/basic.json cmd/main/testdata/production.json
+{"server":{"host":"localhost","port":9090},"features":["audit","diff","merge"],"logging":{"level":"info"}}
+```
+
+Not implemented yet: the `diff` and `explain` CLI commands.
