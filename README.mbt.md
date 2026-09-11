@@ -55,6 +55,23 @@ The report preserves deterministic path order and can be used by a future CLI
 to fail CI only when a breaking configuration change is detected. The API
 compares snapshots; it does not merge runtime layers or read files itself.
 
+### The `compat` command
+
+The `compat` command compares two JSON snapshots. It prints changes without
+printing their values, and returns status `1` when a breaking change is found:
+
+```text
+moon run cmd/main -- compat cmd/main/testdata/basic.json cmd/main/testdata/compatibility-compatible.json
+[behavioral] changed: features
+[compatible] added: logging
+[behavioral] changed: server.port
+summary: compatible=1 behavioral=2 breaking=0
+compatibility check passed
+```
+
+This makes the first compatibility check usable as a release gate while keeping
+secret values out of the default report.
+
 The sections below document the reusable JSON foundation retained during this
 transition. They are not the project's differentiating scope.
 

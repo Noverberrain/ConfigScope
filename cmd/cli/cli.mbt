@@ -1,7 +1,7 @@
 ///|
 /// Return the command usage message.
 pub fn usage() -> String {
-  "Usage:\n  configscope get <config.json> <path>\n  configscope audit <config.json> [--required <path>] [--type <path>:<kind>]\n  configscope merge <base.json> <override.json>..."
+  "Usage:\n  configscope get <config.json> <path>\n  configscope audit <config.json> [--required <path>] [--type <path>:<kind>]\n  configscope compat <before.json> <after.json>\n  configscope merge <base.json> <override.json>..."
 }
 
 ///|
@@ -189,6 +189,12 @@ pub fn run(args : Array[String]) -> Result[String, String] {
     Some("audit") =>
       if args.length() >= 3 {
         run_audit(args)
+      } else {
+        Err(usage())
+      }
+    Some("compat") =>
+      if args.length() == 4 {
+        run_compat(args)
       } else {
         Err(usage())
       }
