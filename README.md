@@ -15,7 +15,8 @@ The first compatibility milestone provides:
 1. deterministic recursive comparison of JSON-compatible configuration values;
 2. stable classification of added, changed, removed, and type-changed paths;
 3. a compatibility report with counts, paths, before/after values, and messages;
-4. a small public API that can later power a CI compatibility gate.
+4. a public API and CLI release gate with configurable breaking, behavioral,
+   or all-change thresholds.
 
 The existing path, value, merge, provenance, and audit code is retained as a
 reusable JSON foundation during the migration. It is not the new project's
@@ -51,17 +52,21 @@ test {
 }
 ```
 
-The report preserves deterministic path order and can be used by a future CLI
-to fail CI only when a breaking configuration change is detected. The API
-compares snapshots; it does not merge runtime layers or read files itself.
+The report preserves deterministic path order, and the `compat` command can
+fail a release when a selected threshold is exceeded. By default only
+`breaking` changes fail; `--fail-on behavioral` also rejects value changes,
+while `--fail-on any` requires identical snapshots. The API compares
+snapshots; it does not merge runtime layers or read files itself.
 
 ### The compat command
 
 The `compat` command compares two JSON snapshots. It prints changes without
-printing their values, and returns status `1` when a breaking change is found:
+printing their values, and returns status `1` when the selected gate is not
+passed:
 
 ```text
 moon run cmd/main -- compat cmd/main/testdata/basic.json cmd/main/testdata/compatibility-compatible.json
+gate: breaking
 [behavioral] changed: features
 [compatible] added: logging
 [behavioral] changed: server.port
@@ -70,7 +75,9 @@ compatibility check passed
 ```
 
 This makes the first compatibility check usable as a release gate while keeping
-secret values out of the default report.
+secret values out of the default report. The gate can be tightened with
+`--fail-on behavioral` or `--fail-on any` when a release needs a stricter
+contract.
 
 The sections below document the reusable JSON foundation retained during this
 transition. They are not the project's differentiating scope.
@@ -441,5 +448,4 @@ moon run cmd/main -- merge cmd/main/testdata/basic.json cmd/main/testdata/produc
 {"server":{"host":"localhost","port":9090},"features":["audit","diff","merge"],"logging":{"level":"info"}}
 ```
 
-Next planned: compatibility policies, versioned contract files, the `compat`
-CLI command, and a GitHub Actions release gate.
+Next planned: versioned contract files and a GitHub Actions release gate.

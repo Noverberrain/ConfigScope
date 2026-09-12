@@ -56,6 +56,13 @@ pub(all) enum ConfigCompatibilityImpact {
 } derive(Eq, @debug.Debug)
 pub fn ConfigCompatibilityImpact::to_string(Self) -> String
 
+pub(all) enum ConfigCompatibilityPolicy {
+  BreakingOnly
+  NoBehavioralChanges
+  NoChanges
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityPolicy::to_string(Self) -> String
+
 pub struct ConfigCompatibilityReport {
   changes : Array[ConfigCompatibilityChange]
 } derive(Eq, @debug.Debug)
@@ -66,6 +73,8 @@ pub fn ConfigCompatibilityReport::change_count(Self) -> Int
 pub fn ConfigCompatibilityReport::changes(Self) -> Array[ConfigCompatibilityChange]
 pub fn ConfigCompatibilityReport::compatible_count(Self) -> Int
 pub fn ConfigCompatibilityReport::is_compatible(Self) -> Bool
+pub fn ConfigCompatibilityReport::passes(Self, ConfigCompatibilityPolicy) -> Bool
+pub fn ConfigCompatibilityReport::violation_count(Self, ConfigCompatibilityPolicy) -> Int
 
 pub struct ConfigConflict {
   path : ConfigPath

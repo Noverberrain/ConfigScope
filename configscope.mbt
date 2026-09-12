@@ -10,6 +10,7 @@ pub using @core {
   type ConfigConflict,
   type ConfigCompatibilityChange,
   type ConfigCompatibilityImpact,
+  type ConfigCompatibilityPolicy,
   type ConfigCompatibilityReport,
   type ConfigDiff,
   type ConfigDiffKind,

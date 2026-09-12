@@ -78,3 +78,44 @@ test "equal snapshots are compatible" {
   assert_eq(report.breaking_count(), 0)
   assert_true(report.is_compatible())
 }
+
+///|
+test "compatibility policies count violations at each threshold" {
+  let before = @configscope.ConfigValue::object(
+    Map([
+      ("added", @configscope.ConfigValue::string("old")),
+      ("removed", @configscope.ConfigValue::string("old")),
+      ("port", @configscope.ConfigValue::number(80.0)),
+    ]),
+  )
+  let after = @configscope.ConfigValue::object(
+    Map([
+      ("added", @configscope.ConfigValue::string("new")),
+      ("port", @configscope.ConfigValue::number(8080.0)),
+      ("enabled", @configscope.ConfigValue::boolean(true)),
+    ]),
+  )
+  let report = before.compatibility_with(after)
+  assert_eq(report.violation_count(BreakingOnly), 1)
+  assert_eq(report.violation_count(NoBehavioralChanges), 3)
+  assert_eq(report.violation_count(NoChanges), 4)
+  assert_true(report.passes(BreakingOnly) == false)
+  assert_true(report.passes(NoBehavioralChanges) == false)
+  assert_true(report.passes(NoChanges) == false)
+}
+
+///|
+test "compatibility policy names are stable" {
+  assert_eq(
+    @configscope.ConfigCompatibilityPolicy::BreakingOnly.to_string(),
+    "breaking",
+  )
+  assert_eq(
+    @configscope.ConfigCompatibilityPolicy::NoBehavioralChanges.to_string(),
+    "behavioral",
+  )
+  assert_eq(
+    @configscope.ConfigCompatibilityPolicy::NoChanges.to_string(),
+    "any",
+  )
+}

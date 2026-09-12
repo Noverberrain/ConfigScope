@@ -17,7 +17,7 @@ ConfigScope 用 MoonBit 检查配置契约在版本演进中的兼容性。它�
 - JSON 配置值和路径的确定性递归比较；
 - 面向版本演进的兼容性影响分类；
 - 包含路径、前后值、影响等级和统计信息的报告 API；
-- 后续提供 `compat` CLI 和 GitHub Actions 门禁；
+- `compat` CLI 及可配置的 `breaking`、`behavioral`、`any` 发布门禁；
 - 完整的 MoonBit 测试、README 示例、CI 和 Apache-2.0 开源代码。
 
 ## 与现有项目的边界
@@ -26,4 +26,4 @@ MoonConfigKit 适合配置文本解析、分层视图构建和单个配置视图
 
 ## 计划与原创说明
 
-先完成兼容性模型和稳定报告，再加入策略文件、命令行退出码和 CI 示例。项目不是现有代码移植，核心 API 面向 MoonBit 独立设计，使用 Apache-2.0 协议开源。
+下一步加入版本化契约文件和 GitHub Actions 发布门禁。项目不是现有代码移植，核心 API 面向 MoonBit 独立设计，使用 Apache-2.0 协议开源。

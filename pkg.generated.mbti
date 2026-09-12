@@ -23,6 +23,8 @@ pub using @core {type ConfigCompatibilityChange}
 
 pub using @core {type ConfigCompatibilityImpact}
 
+pub using @core {type ConfigCompatibilityPolicy}
+
 pub using @core {type ConfigCompatibilityReport}
 
 pub using @core {type ConfigConflict}

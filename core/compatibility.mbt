@@ -11,6 +11,18 @@ pub(all) enum ConfigCompatibilityImpact {
 } derive(Eq, Debug)
 
 ///|
+/// Selects which compatibility impacts should fail a release gate.
+///
+/// `BreakingOnly` is the default and rejects only breaking changes.
+/// `NoBehavioralChanges` also rejects behavioral changes, while `NoChanges`
+/// requires the two snapshots to be identical.
+pub(all) enum ConfigCompatibilityPolicy {
+  BreakingOnly
+  NoBehavioralChanges
+  NoChanges
+} derive(Eq, Debug)
+
+///|
 /// A configuration difference together with its compatibility impact.
 pub struct ConfigCompatibilityChange {
   difference : ConfigDiff
@@ -32,6 +44,31 @@ pub fn ConfigCompatibilityImpact::to_string(
     Compatible => "compatible"
     Behavioral => "behavioral"
     Breaking => "breaking"
+  }
+}
+
+///|
+/// Return the stable command-line name for a compatibility policy.
+pub fn ConfigCompatibilityPolicy::to_string(
+  self : ConfigCompatibilityPolicy,
+) -> String {
+  match self {
+    BreakingOnly => "breaking"
+    NoBehavioralChanges => "behavioral"
+    NoChanges => "any"
+  }
+}
+
+///|
+/// Return whether an impact is allowed by this policy.
+fn ConfigCompatibilityPolicy::allows(
+  self : ConfigCompatibilityPolicy,
+  impact : ConfigCompatibilityImpact,
+) -> Bool {
+  match self {
+    BreakingOnly => impact != Breaking
+    NoBehavioralChanges => impact == Compatible
+    NoChanges => false
   }
 }
 
@@ -162,11 +199,35 @@ pub fn ConfigCompatibilityReport::breaking_count(
 }
 
 ///|
+/// Return the number of changes that violate a release policy.
+pub fn ConfigCompatibilityReport::violation_count(
+  self : ConfigCompatibilityReport,
+  policy : ConfigCompatibilityPolicy,
+) -> Int {
+  self.changes.fold(init=0, (count, change) => {
+    if policy.allows(change.impact()) {
+      count
+    } else {
+      count + 1
+    }
+  })
+}
+
+///|
+/// Return whether this report passes a release policy.
+pub fn ConfigCompatibilityReport::passes(
+  self : ConfigCompatibilityReport,
+  policy : ConfigCompatibilityPolicy,
+) -> Bool {
+  self.violation_count(policy) == 0
+}
+
+///|
 /// Return whether this report contains no breaking changes.
 pub fn ConfigCompatibilityReport::is_compatible(
   self : ConfigCompatibilityReport,
 ) -> Bool {
-  self.breaking_count() == 0
+  self.passes(BreakingOnly)
 }
 
 ///|
