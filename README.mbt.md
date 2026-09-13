@@ -17,6 +17,8 @@ The first compatibility milestone provides:
 3. a compatibility report with counts, paths, before/after values, and messages;
 4. a public API and CLI release gate with configurable breaking, behavioral,
    or all-change thresholds.
+5. a compatibility matrix that checks one candidate against multiple historical
+   baselines.
 
 The existing path, value, merge, provenance, and audit code is retained as a
 reusable JSON foundation during the migration. It is not the new project's
@@ -78,6 +80,32 @@ This makes the first compatibility check usable as a release gate while keeping
 secret values out of the default report. The gate can be tightened with
 `--fail-on behavioral` or `--fail-on any` when a release needs a stricter
 contract.
+
+### The `compat-matrix` command
+
+The `compat-matrix` command checks a candidate snapshot against every supplied
+historical baseline. It keeps the input order, reports each baseline separately,
+and fails when any baseline exceeds the selected gate:
+
+```text
+moon run cmd/main -- compat-matrix cmd/main/testdata/compatibility-compatible.json cmd/main/testdata/basic.json cmd/main/testdata/compatibility-breaking.json
+gate: breaking
+baseline: cmd/main/testdata/basic.json
+  [behavioral] changed: features
+  [compatible] added: logging
+  [behavioral] changed: server.port
+result: passed
+baseline: cmd/main/testdata/compatibility-breaking.json
+  [compatible] added: features
+  [compatible] added: logging
+  [breaking] type_changed: server.port
+result: failed (1 gate violation)
+summary: passed=1 failed=1 total=2
+compatibility matrix failed: 1 baseline exceeds the 'breaking' gate
+```
+
+This is intended for projects that must keep a new configuration release
+compatible with more than one supported historical version.
 
 The sections below document the reusable JSON foundation retained during this
 transition. They are not the project's differentiating scope.

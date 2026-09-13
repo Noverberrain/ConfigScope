@@ -19,9 +19,15 @@ pub using @core {type ConfigAuditIssueKind}
 
 pub using @core {type ConfigAuditRule}
 
+pub using @core {type ConfigCompatibilityBaseline}
+
 pub using @core {type ConfigCompatibilityChange}
 
 pub using @core {type ConfigCompatibilityImpact}
+
+pub using @core {type ConfigCompatibilityMatrixEntry}
+
+pub using @core {type ConfigCompatibilityMatrixReport}
 
 pub using @core {type ConfigCompatibilityPolicy}
 

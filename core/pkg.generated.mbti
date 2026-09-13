@@ -38,6 +38,13 @@ pub fn ConfigAuditRule::path(Self) -> ConfigPath
 pub fn ConfigAuditRule::required(ConfigPath) -> Self
 pub fn ConfigAuditRule::type_is(ConfigPath, ConfigValueKind) -> Self
 
+pub struct ConfigCompatibilityBaseline {
+  name : String
+  value : ConfigValue
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityBaseline::name(Self) -> String
+pub fn ConfigCompatibilityBaseline::new(String, ConfigValue) -> Self
+
 pub struct ConfigCompatibilityChange {
   difference : ConfigDiff
   impact : ConfigCompatibilityImpact
@@ -55,6 +62,25 @@ pub(all) enum ConfigCompatibilityImpact {
   Breaking
 } derive(Eq, @debug.Debug)
 pub fn ConfigCompatibilityImpact::to_string(Self) -> String
+
+pub struct ConfigCompatibilityMatrixEntry {
+  baseline_name : String
+  report : ConfigCompatibilityReport
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityMatrixEntry::baseline_name(Self) -> String
+pub fn ConfigCompatibilityMatrixEntry::passes(Self, ConfigCompatibilityPolicy) -> Bool
+pub fn ConfigCompatibilityMatrixEntry::report(Self) -> ConfigCompatibilityReport
+pub fn ConfigCompatibilityMatrixEntry::violation_count(Self, ConfigCompatibilityPolicy) -> Int
+
+pub struct ConfigCompatibilityMatrixReport {
+  entries : Array[ConfigCompatibilityMatrixEntry]
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityMatrixReport::baseline_count(Self) -> Int
+pub fn ConfigCompatibilityMatrixReport::entries(Self) -> Array[ConfigCompatibilityMatrixEntry]
+pub fn ConfigCompatibilityMatrixReport::entry(Self, Int) -> ConfigCompatibilityMatrixEntry?
+pub fn ConfigCompatibilityMatrixReport::failed_count(Self, ConfigCompatibilityPolicy) -> Int
+pub fn ConfigCompatibilityMatrixReport::passed_count(Self, ConfigCompatibilityPolicy) -> Int
+pub fn ConfigCompatibilityMatrixReport::passes(Self, ConfigCompatibilityPolicy) -> Bool
 
 pub(all) enum ConfigCompatibilityPolicy {
   BreakingOnly
@@ -144,6 +170,7 @@ pub fn ConfigValue::as_number(Self) -> Double?
 pub fn ConfigValue::as_string(Self) -> String?
 pub fn ConfigValue::audit(Self, Array[ConfigAuditRule]) -> Array[ConfigAuditIssue]
 pub fn ConfigValue::boolean(Bool) -> Self
+pub fn ConfigValue::compatibility_matrix(Self, Array[ConfigCompatibilityBaseline]) -> ConfigCompatibilityMatrixReport
 pub fn ConfigValue::compatibility_with(Self, Self) -> ConfigCompatibilityReport
 pub fn ConfigValue::contains_field(Self, String) -> Bool
 pub fn ConfigValue::deep_merge(Self, Self) -> Self

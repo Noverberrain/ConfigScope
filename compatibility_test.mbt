@@ -119,3 +119,46 @@ test "compatibility policy names are stable" {
     "any",
   )
 }
+
+///|
+test "compatibility matrix preserves baselines and applies a policy" {
+  let candidate = @configscope.ConfigValue::object(
+    Map([("port", @configscope.ConfigValue::number(8080.0))]),
+  )
+  let stable_baseline = @configscope.ConfigCompatibilityBaseline::new(
+    "v1",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::number(80.0))]),
+    ),
+  )
+  let breaking_baseline = @configscope.ConfigCompatibilityBaseline::new(
+    "v2",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::string("8080"))]),
+    ),
+  )
+  let matrix = candidate.compatibility_matrix([
+    stable_baseline, breaking_baseline,
+  ])
+  assert_eq(matrix.baseline_count(), 2)
+  assert_eq(matrix.passed_count(BreakingOnly), 1)
+  assert_eq(matrix.failed_count(BreakingOnly), 1)
+  assert_true(!matrix.passes(BreakingOnly))
+  assert_eq(matrix.entry(0).unwrap().baseline_name(), "v1")
+  assert_true(matrix.entry(0).unwrap().passes(BreakingOnly))
+  assert_eq(matrix.entry(1).unwrap().baseline_name(), "v2")
+  assert_eq(
+    matrix.entry(1).unwrap().report().change(0).unwrap().difference_kind(),
+    TypeChanged,
+  )
+}
+
+///|
+test "empty compatibility matrix passes every policy" {
+  let candidate = @configscope.ConfigValue::empty_object()
+  let matrix = candidate.compatibility_matrix([])
+  assert_eq(matrix.baseline_count(), 0)
+  assert_true(matrix.passes(BreakingOnly))
+  assert_true(matrix.passes(NoBehavioralChanges))
+  assert_true(matrix.passes(NoChanges))
+}
