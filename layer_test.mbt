@@ -5,7 +5,7 @@ test "configuration layers keep a source name and value" {
   let config = @configscope.ConfigValue::object(
     Map([("port", @configscope.ConfigValue::number(8080.0))]),
   )
-  let layer = @configscope.ConfigLayer::new("production", config)
+  let layer = @legacy.ConfigLayer::new("production", config)
   assert_eq(layer.name(), "production")
   assert_eq(layer.value(), config)
   assert_eq(
@@ -22,8 +22,8 @@ test "configuration layers keep a source name and value" {
 ///|
 test "configuration layers distinguish sources with equal values" {
   let config = @configscope.ConfigValue::string("same")
-  let defaults = @configscope.ConfigLayer::new("defaults", config)
-  let workstation = @configscope.ConfigLayer::new("local", config)
+  let defaults = @legacy.ConfigLayer::new("defaults", config)
+  let workstation = @legacy.ConfigLayer::new("local", config)
   assert_eq(defaults.value(), workstation.value())
   assert_true(defaults.name() != workstation.name())
   assert_true(defaults != workstation)
@@ -31,7 +31,7 @@ test "configuration layers distinguish sources with equal values" {
 
 ///|
 test "layered configurations merge layers in order" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([
@@ -40,7 +40,7 @@ test "layered configurations merge layers in order" {
       ]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([
@@ -49,7 +49,7 @@ test "layered configurations merge layers in order" {
       ]),
     ),
   )
-  let layered = @configscope.LayeredConfig::new([defaults, production])
+  let layered = @legacy.LayeredConfig::new([defaults, production])
   assert_eq(layered.length(), 2)
   assert_eq(layered.layer(0).unwrap().name(), "defaults")
   assert_eq(layered.layer(1).unwrap().name(), "production")
@@ -61,13 +61,13 @@ test "layered configurations merge layers in order" {
 
 ///|
 test "layered configuration reports conflicts from each later layer" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([("logging", @configscope.ConfigValue::string("compact"))]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([
@@ -80,15 +80,13 @@ test "layered configuration reports conflicts from each later layer" {
       ]),
     ),
   )
-  let command_line = @configscope.ConfigLayer::new(
+  let command_line = @legacy.ConfigLayer::new(
     "command-line",
     @configscope.ConfigValue::object(
       Map([("logging", @configscope.ConfigValue::string("verbose"))]),
     ),
   )
-  let result = @configscope.LayeredConfig::new([
-      defaults, production, command_line,
-    ])
+  let result = @legacy.LayeredConfig::new([defaults, production, command_line])
     .merge_with_report()
     .unwrap()
   assert_eq(result.conflict_count(), 2)
@@ -102,7 +100,7 @@ test "layered configuration reports conflicts from each later layer" {
 
 ///|
 test "empty layered configuration has no merged value" {
-  let layered = @configscope.LayeredConfig::empty()
+  let layered = @legacy.LayeredConfig::empty()
   assert_eq(layered.length(), 0)
   assert_true(layered.layer(0) is None)
   assert_true(layered.merge() is None)
@@ -111,14 +109,14 @@ test "empty layered configuration has no merged value" {
 
 ///|
 test "layered configuration copies the input layer list" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::string("base"),
   )
   let layers = [defaults]
-  let layered = @configscope.LayeredConfig::new(layers)
+  let layered = @legacy.LayeredConfig::new(layers)
   layers.push(
-    @configscope.ConfigLayer::new(
+    @legacy.ConfigLayer::new(
       "production",
       @configscope.ConfigValue::string("prod"),
     ),

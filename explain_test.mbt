@@ -2,7 +2,7 @@
 
 ///|
 test "layered merge explains a final field" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([
@@ -15,7 +15,7 @@ test "layered merge explains a final field" {
       ]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([
@@ -29,7 +29,7 @@ test "layered merge explains a final field" {
     ),
   )
   let path = @configscope.parse_path("server.port").unwrap()
-  let explanation = @configscope.LayeredConfig::new([defaults, production])
+  let explanation = @legacy.LayeredConfig::new([defaults, production])
     .merge_with_provenance()
     .unwrap()
     .explain(path)
@@ -42,7 +42,7 @@ test "layered merge explains a final field" {
 
 ///|
 test "explain preserves the source of an inherited nested field" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([
@@ -55,7 +55,7 @@ test "explain preserves the source of an inherited nested field" {
       ]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([
@@ -68,7 +68,7 @@ test "explain preserves the source of an inherited nested field" {
       ]),
     ),
   )
-  let result = @configscope.LayeredConfig::new([defaults, production])
+  let result = @legacy.LayeredConfig::new([defaults, production])
     .merge_with_provenance()
     .unwrap()
   let explanation = result
@@ -80,8 +80,8 @@ test "explain preserves the source of an inherited nested field" {
 
 ///|
 test "explain returns none for missing or untracked paths" {
-  let result = @configscope.LayeredConfig::new([
-      @configscope.ConfigLayer::new(
+  let result = @legacy.LayeredConfig::new([
+      @legacy.ConfigLayer::new(
         "defaults",
         @configscope.ConfigValue::object(
           Map([("feature", @configscope.ConfigValue::string("enabled"))]),

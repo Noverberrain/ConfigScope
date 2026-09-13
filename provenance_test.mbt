@@ -2,7 +2,7 @@
 
 ///|
 test "layered merge tracks the source of final fields" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([
@@ -18,7 +18,7 @@ test "layered merge tracks the source of final fields" {
       ]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([
@@ -31,7 +31,7 @@ test "layered merge tracks the source of final fields" {
       ]),
     ),
   )
-  let result = @configscope.LayeredConfig::new([defaults, production])
+  let result = @legacy.LayeredConfig::new([defaults, production])
     .merge_with_provenance()
     .unwrap()
   assert_eq(
@@ -51,7 +51,7 @@ test "layered merge tracks the source of final fields" {
 
 ///|
 test "later scalar replacement removes stale descendant provenance" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([
@@ -64,13 +64,13 @@ test "later scalar replacement removes stale descendant provenance" {
       ]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([("feature", @configscope.ConfigValue::string("disabled"))]),
     ),
   )
-  let result = @configscope.LayeredConfig::new([defaults, production])
+  let result = @legacy.LayeredConfig::new([defaults, production])
     .merge_with_provenance()
     .unwrap()
   assert_eq(
@@ -85,13 +85,13 @@ test "later scalar replacement removes stale descendant provenance" {
 
 ///|
 test "provenance merge keeps conflict reports and latest source" {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([("logging", @configscope.ConfigValue::string("compact"))]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([
@@ -104,7 +104,7 @@ test "provenance merge keeps conflict reports and latest source" {
       ]),
     ),
   )
-  let result = @configscope.LayeredConfig::new([defaults, production])
+  let result = @legacy.LayeredConfig::new([defaults, production])
     .merge_with_provenance()
     .unwrap()
   assert_eq(result.conflict_count(), 1)
@@ -120,7 +120,5 @@ test "provenance merge keeps conflict reports and latest source" {
 
 ///|
 test "empty layered provenance merge has no result" {
-  assert_true(
-    @configscope.LayeredConfig::empty().merge_with_provenance() is None,
-  )
+  assert_true(@legacy.LayeredConfig::empty().merge_with_provenance() is None)
 }

@@ -1,4 +1,3 @@
 import {
   "Noverberrain/configscope/core",
-  "Noverberrain/configscope/legacy",
 }

@@ -22,7 +22,7 @@ ConfigScope 用 MoonBit 检查配置契约在版本演进中的兼容性。它�
 
 ## 与现有项目的边界
 
-MoonConfigKit 适合配置文本解析、分层视图构建和单个配置视图的校验；ConfigScope 不实现 INI/Properties 解析、运行时分层合并或通用审计，而是消费已经生成的 JSON 快照，专注于跨版本兼容性判断和发布门禁。两者可以串联使用，但解决的问题不同。
+MoonConfigKit 适合配置文本解析、分层视图构建和单个配置视图的校验；ConfigScope 的主入口不实现 INI/Properties 解析、运行时分层合并或通用审计，而是消费已经生成的 JSON 快照，专注于跨版本兼容性判断和发布门禁。仓库中早期的 merge/layer/audit API 仅作为迁移基础保留在显式的 `legacy` 包中，不属于主 CLI 和主宣传边界。两者可以串联使用，但解决的问题不同。
 
 ## 计划与原创说明
 

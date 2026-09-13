@@ -21,8 +21,10 @@ The first compatibility milestone provides:
    baselines.
 
 The existing path, value, merge, provenance, and audit code is retained as a
-reusable JSON foundation during the migration. It is not the new project's
-primary promise.
+reusable JSON foundation during the migration. The old merge, layer,
+provenance, explanation, and audit APIs are available under the explicit
+`Noverberrain/configscope/legacy` package for migration experiments. They are
+not re-exported by the root package or exposed by the main CLI.
 
 ## Scope boundary
 
@@ -107,8 +109,9 @@ compatibility matrix failed: 1 baseline exceeds the 'breaking' gate
 This is intended for projects that must keep a new configuration release
 compatible with more than one supported historical version.
 
-The sections below document the reusable JSON foundation retained during this
-transition. They are not the project's differentiating scope.
+The sections below document the reusable JSON foundation retained under the
+legacy package during this transition. They are not the project's
+differentiating scope.
 
 ### Configuration paths
 
@@ -271,7 +274,7 @@ test {
   let value = @configscope.ConfigValue::object(
     Map([("region", @configscope.ConfigValue::string("eu-west"))]),
   )
-  let production = @configscope.ConfigLayer::new("production", value)
+  let production = @legacy.ConfigLayer::new("production", value)
   inspect(production.name(), content="production")
   inspect(
     production.value().field("region").unwrap().as_string().unwrap(),
@@ -289,19 +292,19 @@ provenance tracking and `explain` queries are available on merge results.
 ```mbt check
 ///|
 test {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([("port", @configscope.ConfigValue::number(80.0))]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([("port", @configscope.ConfigValue::number(8080.0))]),
     ),
   )
-  let config = @configscope.LayeredConfig::new([defaults, production])
+  let config = @legacy.LayeredConfig::new([defaults, production])
     .merge()
     .unwrap()
   inspect(config.field("port").unwrap().as_number().unwrap(), content="8080")
@@ -320,19 +323,19 @@ merge method.
 ```mbt check
 ///|
 test {
-  let defaults = @configscope.ConfigLayer::new(
+  let defaults = @legacy.ConfigLayer::new(
     "defaults",
     @configscope.ConfigValue::object(
       Map([("port", @configscope.ConfigValue::number(80.0))]),
     ),
   )
-  let production = @configscope.ConfigLayer::new(
+  let production = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([("port", @configscope.ConfigValue::number(8080.0))]),
     ),
   )
-  let result = @configscope.LayeredConfig::new([defaults, production])
+  let result = @legacy.LayeredConfig::new([defaults, production])
     .merge_with_provenance()
     .unwrap()
   inspect(
@@ -354,13 +357,13 @@ reverse) removes stale descendant entries. Empty layered configurations return
 ```mbt check
 ///|
 test {
-  let layer = @configscope.ConfigLayer::new(
+  let layer = @legacy.ConfigLayer::new(
     "production",
     @configscope.ConfigValue::object(
       Map([("port", @configscope.ConfigValue::number(8080.0))]),
     ),
   )
-  let result = @configscope.LayeredConfig::new([layer])
+  let result = @legacy.LayeredConfig::new([layer])
     .merge_with_provenance()
     .unwrap()
   let explanation = result
@@ -423,13 +426,13 @@ test {
     ]),
   )
   let issues = value.audit([
-    @configscope.ConfigAuditRule::required(
+    @legacy.ConfigAuditRule::required(
       @configscope.parse_path("server.host").unwrap(),
     ),
-    @configscope.ConfigAuditRule::required(
+    @legacy.ConfigAuditRule::required(
       @configscope.parse_path("server.port").unwrap(),
     ),
-    @configscope.ConfigAuditRule::type_is(
+    @legacy.ConfigAuditRule::type_is(
       @configscope.parse_path("server.host").unwrap(),
       String,
     ),
@@ -448,46 +451,44 @@ skip missing paths so they can be combined with `required(path)` without
 producing duplicate missing-path diagnostics. Issues include a stable kind,
 canonical path, and human-readable message, and results are sorted by path.
 
-### Existing utility commands
+### Legacy foundation
 
-The repository still includes `get`, `audit`, and `merge` commands as migration
-foundation examples. They are retained for exercising the JSON value model, but
-the new project direction is the compatibility report above.
+The historical merge, layer, provenance, explanation, and audit APIs remain
+available under `Noverberrain/configscope/legacy` for migration experiments.
+The main CLI intentionally exposes only `compat` and `compat-matrix`, so the
+project's public workflow stays focused on release-time compatibility checks.
 
-#### The `get` command
+#### Legacy API examples
 
-The first CLI command reads a JSON file, resolves a dot-separated path, and
-prints the selected value as JSON:
+The historical path API reads a parsed value and resolves a dot-separated path.
 
 ```text
-moon run cmd/main -- get cmd/main/testdata/basic.json server.port
-8080
+`get` is no longer exposed by the main CLI.
+The main CLI no longer exposes this command.
 ```
 
-It also supports nested arrays and scalar values, so the same command can query
-`features` and receive `["audit","diff"]` as JSON output. Missing paths and
-invalid command arguments produce a diagnostic instead of a value.
+Nested arrays and scalar values remain covered by the legacy value model; they
+are not commands exposed by the primary CLI. Missing paths and
+invalid command arguments are handled by the library rather than the primary CLI.
 
-#### The `audit` command
+<!-- The legacy command examples are intentionally omitted from the main CLI. -->
 
-The audit command applies one or more required-path or type rules to a JSON
-file. It reports every issue in path order and exits with status `1` when a
-rule fails:
+The historical audit API applies required-path or type rules to a parsed value.
 
 ```text
-moon run cmd/main -- audit cmd/main/testdata/basic.json --required server.host --type server.port:number
-audit passed
+`audit` is no longer exposed by the main CLI.
+The legacy API reports whether its rules pass; the primary CLI does not expose it.
 ```
 
-#### The `merge` command
+#### Historical merge API
 
-The merge command reads JSON files from first to last and prints the recursively
-merged configuration. Later files override scalar and array values, while
-nested objects retain fields from both layers:
+The historical merge API combines layers from first to last. It remains
+available only through the explicit legacy package; later layers override
+nested object fields.
 
 ```text
-moon run cmd/main -- merge cmd/main/testdata/basic.json cmd/main/testdata/production.json
-{"server":{"host":"localhost","port":9090},"features":["audit","diff","merge"],"logging":{"level":"info"}}
+`merge` is no longer exposed by the main CLI.
+`Noverberrain/configscope/legacy`
 ```
 
 Next planned: versioned contract files and a GitHub Actions release gate.

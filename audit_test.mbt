@@ -12,7 +12,7 @@ test "required-path audit accepts present values" {
       ),
     ]),
   )
-  let rule = @configscope.ConfigAuditRule::required(
+  let rule = @legacy.ConfigAuditRule::required(
     @configscope.parse_path("server.host").unwrap(),
   )
   assert_eq(rule.path().to_string(), "server.host")
@@ -33,7 +33,7 @@ test "required-path audit reports missing nested values" {
   )
   let issue = value
     .audit([
-      @configscope.ConfigAuditRule::required(
+      @legacy.ConfigAuditRule::required(
         @configscope.parse_path("server.host").unwrap(),
       ),
     ])
@@ -53,9 +53,7 @@ test "required-path audit treats null as present" {
     Map([("token", @configscope.ConfigValue::null())]),
   )
   let issues = value.audit([
-    @configscope.ConfigAuditRule::required(
-      @configscope.parse_path("token").unwrap(),
-    ),
+    @legacy.ConfigAuditRule::required(@configscope.parse_path("token").unwrap()),
   ])
   assert_eq(issues.length(), 0)
 }
@@ -64,10 +62,10 @@ test "required-path audit treats null as present" {
 test "required-path audit reports each missing rule" {
   let value = @configscope.ConfigValue::empty_object()
   let issues = value.audit([
-    @configscope.ConfigAuditRule::required(
+    @legacy.ConfigAuditRule::required(
       @configscope.parse_path("server.host").unwrap(),
     ),
-    @configscope.ConfigAuditRule::required(
+    @legacy.ConfigAuditRule::required(
       @configscope.parse_path("database.url").unwrap(),
     ),
   ])
@@ -79,7 +77,7 @@ test "required-path audit reports each missing rule" {
 ///|
 test "audit issue kind name is stable" {
   assert_eq(
-    ConfigAuditIssueKind::MissingRequired.to_string(),
+    @legacy.ConfigAuditIssueKind::MissingRequired.to_string(),
     "missing_required",
   )
 }
@@ -89,7 +87,7 @@ test "type audit accepts the expected kind" {
   let value = @configscope.ConfigValue::object(
     Map([("port", @configscope.ConfigValue::number(8080.0))]),
   )
-  let rule = @configscope.ConfigAuditRule::type_is(
+  let rule = @legacy.ConfigAuditRule::type_is(
     @configscope.parse_path("port").unwrap(),
     Number,
   )
@@ -104,7 +102,7 @@ test "type audit reports the actual and expected kinds" {
   )
   let issue = value
     .audit([
-      @configscope.ConfigAuditRule::type_is(
+      @legacy.ConfigAuditRule::type_is(
         @configscope.parse_path("port").unwrap(),
         Number,
       ),
@@ -126,11 +124,11 @@ test "type audit reports the actual and expected kinds" {
 test "type audit ignores missing paths" {
   let value = @configscope.ConfigValue::empty_object()
   let issues = value.audit([
-    @configscope.ConfigAuditRule::type_is(
+    @legacy.ConfigAuditRule::type_is(
       @configscope.parse_path("server.port").unwrap(),
       Number,
     ),
-    @configscope.ConfigAuditRule::required(
+    @legacy.ConfigAuditRule::required(
       @configscope.parse_path("server.port").unwrap(),
     ),
   ])
@@ -145,7 +143,7 @@ test "type audit distinguishes null from other kinds" {
   )
   let issue = value
     .audit([
-      @configscope.ConfigAuditRule::type_is(
+      @legacy.ConfigAuditRule::type_is(
         @configscope.parse_path("token").unwrap(),
         String,
       ),
