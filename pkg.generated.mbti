@@ -17,6 +17,8 @@ pub using @core {type ConfigCompatibilityBaseline}
 
 pub using @core {type ConfigCompatibilityChange}
 
+pub using @core {type ConfigCompatibilityContract}
+
 pub using @core {type ConfigCompatibilityImpact}
 
 pub using @core {type ConfigCompatibilityMatrixEntry}

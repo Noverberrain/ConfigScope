@@ -56,6 +56,16 @@ pub fn ConfigCompatibilityChange::impact(Self) -> ConfigCompatibilityImpact
 pub fn ConfigCompatibilityChange::message(Self) -> String
 pub fn ConfigCompatibilityChange::path(Self) -> ConfigPath
 
+pub struct ConfigCompatibilityContract {
+  candidate_path : String
+  baseline_paths : Array[String]
+  policy : ConfigCompatibilityPolicy
+} derive(Eq, @debug.Debug)
+pub fn ConfigCompatibilityContract::baseline_paths(Self) -> Array[String]
+pub fn ConfigCompatibilityContract::candidate_path(Self) -> String
+pub fn ConfigCompatibilityContract::from_value(ConfigValue) -> Result[Self, String]
+pub fn ConfigCompatibilityContract::policy(Self) -> ConfigCompatibilityPolicy
+
 pub(all) enum ConfigCompatibilityImpact {
   Compatible
   Behavioral

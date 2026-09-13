@@ -1,0 +1,124 @@
+///|
+/// Resolve a snapshot path relative to the contract manifest.
+fn resolve_contract_path(manifest_path : String, entry_path : String) -> String {
+  let entry : @path.Path = entry_path
+  if entry.is_absolute() {
+    entry.to_string()
+  } else {
+    let manifest : @path.Path = manifest_path
+    manifest.dirname().join(entry).to_string()
+  }
+}
+
+///|
+/// Read a candidate or baseline snapshot referenced by a contract.
+fn read_contract_snapshot(
+  manifest_path : String,
+  role : String,
+  display_path : String,
+) -> Result[@configscope.ConfigValue, String] {
+  let file_path = resolve_contract_path(manifest_path, display_path)
+  if !@fs.path_exists(file_path) {
+    return Err(
+      "contract " + role + " file '" + display_path + "' does not exist",
+    )
+  }
+  let source : Result[String, String] = Ok(@fs.read_file_to_string(file_path)) catch {
+    _ => Err("cannot read contract " + role + " file '" + display_path + "'")
+  }
+  let source = match source {
+    Ok(source) => source
+    Err(error) => return Err(error)
+  }
+  let value : Result[@configscope.ConfigValue, String] = Ok(
+    @configscope.ConfigValue::parse_json(source),
+  ) catch {
+    _ =>
+      Err("invalid JSON in contract " + role + " file '" + display_path + "'")
+  }
+  match value {
+    Ok(value) => Ok(value)
+    Err(error) => Err(error)
+  }
+}
+
+///|
+/// Read all baseline snapshots referenced by a contract in manifest order.
+fn read_contract_baselines(
+  manifest_path : String,
+  paths : Array[String],
+  index : Int,
+  baselines : Array[@configscope.ConfigCompatibilityBaseline],
+) -> Result[Array[@configscope.ConfigCompatibilityBaseline], String] {
+  if index >= paths.length() {
+    Ok(baselines)
+  } else {
+    let display_path = paths.get(index).unwrap()
+    match read_contract_snapshot(manifest_path, "baseline", display_path) {
+      Ok(value) => {
+        baselines.push(
+          @configscope.ConfigCompatibilityBaseline::new(display_path, value),
+        )
+        read_contract_baselines(manifest_path, paths, index + 1, baselines)
+      }
+      Err(error) => Err(error)
+    }
+  }
+}
+
+///|
+/// Check a candidate snapshot against the baselines declared by a contract.
+fn run_contract_check(args : Array[String]) -> Result[String, String] {
+  let manifest_path = args.get(2).unwrap()
+  let manifest = match read_config(manifest_path) {
+    Ok(value) => value
+    Err(error) => return Err(error)
+  }
+  let contract = match
+    @configscope.ConfigCompatibilityContract::from_value(manifest) {
+    Ok(contract) => contract
+    Err(error) =>
+      return Err(
+        "invalid compatibility contract '" + manifest_path + "': " + error,
+      )
+  }
+  let candidate_path = contract.candidate_path()
+  let candidate = match
+    read_contract_snapshot(manifest_path, "candidate", candidate_path) {
+    Ok(value) => value
+    Err(error) => return Err(error)
+  }
+  let baselines = match
+    read_contract_baselines(manifest_path, contract.baseline_paths(), 0, []) {
+    Ok(baselines) => baselines
+    Err(error) => return Err(error)
+  }
+  let policy = contract.policy()
+  let report = candidate.compatibility_matrix(baselines)
+  let output = "contract: " +
+    manifest_path +
+    "\n" +
+    "candidate: " +
+    candidate_path +
+    "\n" +
+    render_compatibility_matrix(report, policy)
+  if report.passes(policy) {
+    Ok(output + "\ncompatibility contract passed")
+  } else {
+    let count = report.failed_count(policy)
+    let noun = if count == 1 { "baseline" } else { "baselines" }
+    let verb = if count == 1 { "exceeds" } else { "exceed" }
+    Err(
+      output +
+      "\ncompatibility contract failed: " +
+      count.to_string() +
+      " " +
+      noun +
+      " " +
+      verb +
+      " the '" +
+      policy.to_string() +
+      "' gate",
+    )
+  }
+}

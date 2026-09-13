@@ -1,0 +1,5 @@
+{
+  "candidate": "compatibility-breaking.json",
+  "baselines": ["basic.json"],
+  "fail_on": "breaking"
+}

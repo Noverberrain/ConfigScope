@@ -7,6 +7,7 @@ pub using @core {
   type ConfigCompatibilityChange,
   type ConfigCompatibilityImpact,
   type ConfigCompatibilityBaseline,
+  type ConfigCompatibilityContract,
   type ConfigCompatibilityMatrixEntry,
   type ConfigCompatibilityMatrixReport,
   type ConfigCompatibilityPolicy,

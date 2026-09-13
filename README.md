@@ -19,6 +19,8 @@ The first compatibility milestone provides:
    or all-change thresholds.
 5. a compatibility matrix that checks one candidate against multiple historical
    baselines.
+6. a versioned contract manifest and `contract-check` command for repeatable
+   release checks.
 
 The existing path, value, merge, provenance, and audit code is retained as a
 reusable JSON foundation during the migration. The old merge, layer,
@@ -108,6 +110,31 @@ compatibility matrix failed: 1 baseline exceeds the 'breaking' gate
 
 This is intended for projects that must keep a new configuration release
 compatible with more than one supported historical version.
+
+### Contract manifests
+
+A contract manifest records the candidate snapshot, the historical baselines,
+and the release gate in one reviewable file:
+
+```json
+{
+  "candidate": "configs/v2.json",
+  "baselines": ["configs/v1.json", "configs/v1.5.json"],
+  "fail_on": "breaking"
+}
+```
+
+Run `contract-check` with the manifest path. Snapshot paths are resolved
+relative to the manifest, while the report keeps the names written in the
+manifest. The `fail_on` field accepts `breaking`, `behavioral`, or `any`
+and defaults to `breaking`. This keeps release policy in version control
+without adding a configuration loader or a runtime merge mechanism.
+
+The repository includes a working example:
+
+```text
+moon run cmd/main -- contract-check configscope.contract.json
+```
 
 The sections below document the reusable JSON foundation retained under the
 legacy package during this transition. They are not the project's
@@ -477,4 +504,4 @@ nested object fields.
 `Noverberrain/configscope/legacy`
 ```
 
-Next planned: versioned contract files and a GitHub Actions release gate.
+Next planned: a GitHub Actions release gate that runs `contract-check`.

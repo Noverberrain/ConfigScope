@@ -1,0 +1,5 @@
+{
+  "candidate": "cmd/main/testdata/compatibility-compatible.json",
+  "baselines": ["cmd/main/testdata/basic.json"],
+  "fail_on": "breaking"
+}

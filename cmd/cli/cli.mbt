@@ -1,7 +1,7 @@
 ///|
 /// Return the command usage message.
 pub fn usage() -> String {
-  "Usage:\n  configscope compat <before.json> <after.json> [--fail-on breaking|behavioral|any]\n  configscope compat-matrix <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any]"
+  "Usage:\n  configscope compat <before.json> <after.json> [--fail-on breaking|behavioral|any]\n  configscope compat-matrix <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any]\n  configscope contract-check <contract.json>"
 }
 
 ///|
@@ -42,6 +42,12 @@ pub fn run(args : Array[String]) -> Result[String, String] {
     Some("compat-matrix") =>
       if args.length() >= 3 {
         run_compatibility_matrix(args)
+      } else {
+        Err(usage())
+      }
+    Some("contract-check") =>
+      if args.length() == 3 {
+        run_contract_check(args)
       } else {
         Err(usage())
       }
