@@ -47,3 +47,14 @@ jobs:
         run: |
           moon info
           git diff --exit-code -- '*.mbti'
+
+      - name: Check versioned compatibility contract
+        run: moon run cmd/main -- contract-check configscope.contract.json
+
+      - name: Verify breaking changes fail the gate
+        shell: bash
+        run: |
+          if moon run cmd/main -- contract-check cmd/main/testdata/configscope-breaking.contract.json; then
+            echo "Expected the breaking contract check to fail."
+            exit 1
+          fi

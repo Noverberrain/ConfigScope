@@ -518,4 +518,5 @@ nested object fields.
 `Noverberrain/configscope/legacy`
 ```
 
-Next planned: a GitHub Actions release gate that runs `contract-check`.
+GitHub Actions now runs `contract-check` on pushes and pull requests, so a
+breaking change in the checked contract can block the workflow before release.
