@@ -1,5 +1,6 @@
 import {
   "Noverberrain/configscope",
+  "moonbitlang/core/json",
   "moonbitlang/x/fs",
   "moonbitlang/x/path",
 }

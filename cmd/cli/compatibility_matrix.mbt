@@ -3,6 +3,7 @@
 priv struct CompatibilityMatrixArguments {
   baseline_paths : Array[String]
   policy : @configscope.ConfigCompatibilityPolicy
+  format : CliOutputFormat
 }
 
 ///|
@@ -12,12 +13,13 @@ fn parse_compatibility_matrix_arguments(
   index : Int,
   baseline_paths : Array[String],
   policy : @configscope.ConfigCompatibilityPolicy,
+  format : CliOutputFormat,
 ) -> Result[CompatibilityMatrixArguments, String] {
   if index >= args.length() {
     if baseline_paths.length() == 0 {
       Err("compat-matrix requires at least one baseline file")
     } else {
-      Ok({ baseline_paths, policy })
+      Ok({ baseline_paths, policy, format })
     }
   } else {
     match args.get(index) {
@@ -27,18 +29,43 @@ fn parse_compatibility_matrix_arguments(
             match parse_compatibility_policy(value) {
               Ok(next_policy) =>
                 match
-                  parse_compatibility_options(args, index + 2, next_policy) {
-                  Ok(final_policy) =>
+                  parse_compatibility_options(
+                    args,
+                    index + 2,
+                    next_policy,
+                    format,
+                  ) {
+                  Ok(options) =>
                     if baseline_paths.length() == 0 {
                       Err("compat-matrix requires at least one baseline file")
                     } else {
-                      Ok({ baseline_paths, policy: final_policy })
+                      Ok({
+                        baseline_paths,
+                        policy: options.policy,
+                        format: options.format,
+                      })
                     }
                   Err(error) => Err(error)
                 }
               Err(error) => Err(error)
             }
           None => Err("missing value after --fail-on")
+        }
+      Some("--format") =>
+        match args.get(index + 1) {
+          Some(value) =>
+            match parse_output_format(value) {
+              Ok(next_format) =>
+                parse_compatibility_matrix_arguments(
+                  args,
+                  index + 2,
+                  baseline_paths,
+                  policy,
+                  next_format,
+                )
+              Err(error) => Err(error)
+            }
+          None => Err("missing value after --format")
         }
       Some(path) => {
         baseline_paths.push(path)
@@ -47,6 +74,7 @@ fn parse_compatibility_matrix_arguments(
           index + 1,
           baseline_paths,
           policy,
+          format,
         )
       }
       None => Err("invalid compat-matrix arguments")
@@ -131,7 +159,7 @@ fn render_compatibility_matrix(
 /// Compare a candidate snapshot against several historical baselines.
 fn run_compatibility_matrix(args : Array[String]) -> Result[String, String] {
   let parsed = match
-    parse_compatibility_matrix_arguments(args, 3, [], BreakingOnly) {
+    parse_compatibility_matrix_arguments(args, 3, [], BreakingOnly, Text) {
     Ok(parsed) => parsed
     Err(error) => return Err(error)
   }
@@ -145,24 +173,35 @@ fn run_compatibility_matrix(args : Array[String]) -> Result[String, String] {
     Err(error) => return Err(error)
   }
   let report = candidate.compatibility_matrix(baselines)
-  let output = render_compatibility_matrix(report, parsed.policy)
+  let output = match parsed.format {
+    Text => render_compatibility_matrix(report, parsed.policy)
+    Json => render_json_compatibility_matrix(report, parsed.policy)
+  }
   if report.passes(parsed.policy) {
-    Ok(output + "\ncompatibility matrix passed")
+    match parsed.format {
+      Text => Ok(output + "\ncompatibility matrix passed")
+      Json => Ok(output)
+    }
   } else {
-    let count = report.failed_count(parsed.policy)
-    let noun = if count == 1 { "baseline" } else { "baselines" }
-    let verb = if count == 1 { "exceeds" } else { "exceed" }
-    Err(
-      output +
-      "\ncompatibility matrix failed: " +
-      count.to_string() +
-      " " +
-      noun +
-      " " +
-      verb +
-      " the '" +
-      parsed.policy.to_string() +
-      "' gate",
-    )
+    match parsed.format {
+      Text => {
+        let count = report.failed_count(parsed.policy)
+        let noun = if count == 1 { "baseline" } else { "baselines" }
+        let verb = if count == 1 { "exceeds" } else { "exceed" }
+        Err(
+          output +
+          "\ncompatibility matrix failed: " +
+          count.to_string() +
+          " " +
+          noun +
+          " " +
+          verb +
+          " the '" +
+          parsed.policy.to_string() +
+          "' gate",
+        )
+      }
+      Json => Err(output)
+    }
   }
 }

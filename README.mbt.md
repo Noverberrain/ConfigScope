@@ -520,3 +520,16 @@ nested object fields.
 
 GitHub Actions now runs `contract-check` on pushes and pull requests, so a
 breaking change in the checked contract can block the workflow before release.
+
+### JSON reports
+
+Automation can request a structured report from any compatibility command:
+
+```text
+moon run cmd/main -- contract-check configscope.contract.json --format json
+```
+
+The JSON result includes `kind`, `gate`, `passed`, a summary, and the ordered
+changes or baseline entries. A failed check still returns exit code `1` while
+writing the report to standard output, so scripts can parse the result without
+losing the release gate behavior.

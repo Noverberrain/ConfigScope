@@ -131,3 +131,18 @@ test "compat validates gate options" {
     Err("unknown compat option '--verbose'"),
   )
 }
+
+///|
+test "compat emits machine-readable JSON" {
+  let output = @cli.run([
+    "configscope", "compat", "cmd/main/testdata/basic.json", "cmd/main/testdata/compatibility-compatible.json",
+    "--format", "json",
+  ]).unwrap()
+  let value = @configscope.ConfigValue::parse_json(output)
+  assert_eq(
+    value.field("kind").unwrap().as_string(),
+    Some("compatibility_report"),
+  )
+  assert_eq(value.field("passed").unwrap().as_boolean(), Some(true))
+  assert_eq(value.field("changes").unwrap().length(), Some(3))
+}

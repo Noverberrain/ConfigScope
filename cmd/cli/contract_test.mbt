@@ -59,3 +59,18 @@ test "contract-check reports missing referenced snapshots" {
     Err("contract candidate file 'missing.json' does not exist"),
   )
 }
+
+///|
+test "contract-check emits machine-readable JSON" {
+  let output = @cli.run([
+    "configscope", "contract-check", "cmd/main/testdata/configscope-compatible.contract.json",
+    "--format", "json",
+  ]).unwrap()
+  let value = @configscope.ConfigValue::parse_json(output)
+  assert_eq(
+    value.field("kind").unwrap().as_string(),
+    Some("compatibility_contract"),
+  )
+  assert_eq(value.field("passed").unwrap().as_boolean(), Some(true))
+  assert_eq(value.field("gate").unwrap().as_string(), Some("breaking"))
+}

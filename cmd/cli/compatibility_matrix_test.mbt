@@ -76,3 +76,23 @@ test "compat-matrix validates inputs" {
     Err("file 'missing.json' does not exist"),
   )
 }
+
+///|
+test "compat-matrix emits machine-readable JSON on failure" {
+  let result = @cli.run([
+    "configscope", "compat-matrix", "cmd/main/testdata/compatibility-compatible.json",
+    "cmd/main/testdata/basic.json", "cmd/main/testdata/compatibility-breaking.json",
+    "--format", "json",
+  ])
+  let output = match result {
+    Ok(_) => fail("expected a breaking baseline")
+    Err(output) => output
+  }
+  let value = @configscope.ConfigValue::parse_json(output)
+  assert_eq(
+    value.field("kind").unwrap().as_string(),
+    Some("compatibility_matrix"),
+  )
+  assert_eq(value.field("passed").unwrap().as_boolean(), Some(false))
+  assert_eq(value.field("baselines").unwrap().length(), Some(2))
+}

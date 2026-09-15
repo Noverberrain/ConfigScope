@@ -1,4 +1,21 @@
 ///|
+fn parse_contract_output_format(
+  args : Array[String],
+) -> Result[CliOutputFormat, String] {
+  if args.length() == 3 {
+    Ok(Text)
+  } else {
+    match (args.get(3), args.get(4)) {
+      (Some("--format"), Some(value)) => parse_output_format(value)
+      (Some("--format"), None) => Err("missing value after --format")
+      (Some(option), _) => Err("unknown contract-check option '" + option + "'")
+      (_, None) => Err("missing value after --format")
+      (_, _) => Err("invalid contract-check arguments")
+    }
+  }
+}
+
+///|
 /// Resolve a snapshot path relative to the contract manifest.
 fn resolve_contract_path(manifest_path : String, entry_path : String) -> String {
   let entry : @path.Path = entry_path
@@ -70,6 +87,10 @@ fn read_contract_baselines(
 /// Check a candidate snapshot against the baselines declared by a contract.
 fn run_contract_check(args : Array[String]) -> Result[String, String] {
   let manifest_path = args.get(2).unwrap()
+  let format = match parse_contract_output_format(args) {
+    Ok(format) => format
+    Err(error) => return Err(error)
+  }
   let manifest = match read_config(manifest_path) {
     Ok(value) => value
     Err(error) => return Err(error)
@@ -95,30 +116,45 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
   }
   let policy = contract.policy()
   let report = candidate.compatibility_matrix(baselines)
-  let output = "contract: " +
-    manifest_path +
-    "\n" +
-    "candidate: " +
-    candidate_path +
-    "\n" +
-    render_compatibility_matrix(report, policy)
+  let output = match format {
+    Text =>
+      "contract: " +
+      manifest_path +
+      "\n" +
+      "candidate: " +
+      candidate_path +
+      "\n" +
+      render_compatibility_matrix(report, policy)
+    Json =>
+      render_json_compatibility_contract(
+        manifest_path, candidate_path, report, policy,
+      )
+  }
   if report.passes(policy) {
-    Ok(output + "\ncompatibility contract passed")
+    match format {
+      Text => Ok(output + "\ncompatibility contract passed")
+      Json => Ok(output)
+    }
   } else {
-    let count = report.failed_count(policy)
-    let noun = if count == 1 { "baseline" } else { "baselines" }
-    let verb = if count == 1 { "exceeds" } else { "exceed" }
-    Err(
-      output +
-      "\ncompatibility contract failed: " +
-      count.to_string() +
-      " " +
-      noun +
-      " " +
-      verb +
-      " the '" +
-      policy.to_string() +
-      "' gate",
-    )
+    match format {
+      Text => {
+        let count = report.failed_count(policy)
+        let noun = if count == 1 { "baseline" } else { "baselines" }
+        let verb = if count == 1 { "exceeds" } else { "exceed" }
+        Err(
+          output +
+          "\ncompatibility contract failed: " +
+          count.to_string() +
+          " " +
+          noun +
+          " " +
+          verb +
+          " the '" +
+          policy.to_string() +
+          "' gate",
+        )
+      }
+      Json => Err(output)
+    }
   }
 }
