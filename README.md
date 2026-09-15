@@ -147,6 +147,19 @@ moon run cmd/main -- contract-init cmd/main/testdata/compatibility-compatible.js
 moon run cmd/main -- contract-check release.contract.json
 ```
 
+### One-command demonstration
+
+For a complete local demonstration, run the repository script:
+
+```powershell
+.\demo.ps1
+```
+
+It generates a temporary contract under `_build/demo`, checks a compatible
+release, prints a JSON report, and verifies that the breaking fixture is
+rejected with exit code `1`. The generated files are ignored build output and
+can be inspected while recording a short project demonstration.
+
 The sections below document the reusable JSON foundation retained under the
 legacy package during this transition. They are not the project's
 differentiating scope.
