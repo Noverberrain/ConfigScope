@@ -1,7 +1,7 @@
 ///|
 /// Return the command usage message.
 pub fn usage() -> String {
-  "Usage:\n  configscope compat <before.json> <after.json> [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope compat-matrix <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope contract-check <contract.json> [--format text|json]"
+  "Usage:\n  configscope compat <before.json> <after.json> [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope compat-matrix <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope contract-init <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any] [--output contract.json]\n  configscope contract-check <contract.json> [--format text|json]"
 }
 
 ///|
@@ -48,6 +48,12 @@ pub fn run(args : Array[String]) -> Result[String, String] {
     Some("contract-check") =>
       if args.length() == 3 || args.length() == 5 {
         run_contract_check(args)
+      } else {
+        Err(usage())
+      }
+    Some("contract-init") =>
+      if args.length() >= 4 {
+        run_contract_init(args)
       } else {
         Err(usage())
       }

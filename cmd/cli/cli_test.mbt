@@ -1,8 +1,8 @@
 ///|
-test "usage exposes only compatibility commands" {
+test "usage exposes compatibility commands" {
   assert_eq(
     @cli.usage(),
-    "Usage:\n  configscope compat <before.json> <after.json> [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope compat-matrix <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope contract-check <contract.json> [--format text|json]",
+    "Usage:\n  configscope compat <before.json> <after.json> [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope compat-matrix <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any] [--format text|json]\n  configscope contract-init <candidate.json> <baseline.json>... [--fail-on breaking|behavioral|any] [--output contract.json]\n  configscope contract-check <contract.json> [--format text|json]",
   )
 }
 

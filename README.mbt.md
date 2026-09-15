@@ -21,6 +21,8 @@ The first compatibility milestone provides:
    baselines.
 6. a versioned contract manifest and `contract-check` command for repeatable
    release checks.
+7. a `contract-init` command that generates a portable contract manifest from
+   existing JSON snapshots.
 
 The existing path, value, merge, provenance, and audit code is retained as a
 reusable JSON foundation during the migration. The old merge, layer,
@@ -134,6 +136,15 @@ The repository includes a working example:
 
 ```text
 moon run cmd/main -- contract-check configscope.contract.json
+```
+
+When starting a new release contract, `contract-init` validates the snapshots
+and writes the manifest for you. It stores paths relative to the output file,
+uses portable `/` separators, and refuses to overwrite an existing file:
+
+```text
+moon run cmd/main -- contract-init cmd/main/testdata/compatibility-compatible.json cmd/main/testdata/basic.json --output release.contract.json
+moon run cmd/main -- contract-check release.contract.json
 ```
 
 The sections below document the reusable JSON foundation retained under the
@@ -482,8 +493,9 @@ canonical path, and human-readable message, and results are sorted by path.
 
 The historical merge, layer, provenance, explanation, and audit APIs remain
 available under `Noverberrain/configscope/legacy` for migration experiments.
-The main CLI intentionally exposes only `compat` and `compat-matrix`, so the
-project's public workflow stays focused on release-time compatibility checks.
+The main CLI intentionally exposes only compatibility workflow commands, so
+the project's public workflow stays focused on release-time compatibility
+checks.
 
 #### Legacy API examples
 
