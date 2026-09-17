@@ -37,6 +37,47 @@ INI/Properties parser, runtime layer resolution, secret loading, or general
 schema validation. Those concerns can be handled by a configuration loader;
 ConfigScope focuses on compatibility between released configuration versions.
 
+### Use from another MoonBit project
+
+The published library is `Noverberrain/configscope@0.1.0`. From the root of
+your own MoonBit project, add it as a dependency:
+
+```sh
+moon add Noverberrain/configscope@0.1.0
+```
+
+Import the root package in the consumer's `cmd/main/moon.pkg`:
+
+```text
+import {
+  "Noverberrain/configscope",
+}
+
+pkgtype(kind: "executable")
+```
+
+Then use the public API in `cmd/main/main.mbt`:
+
+```moonbit
+fn main raise {
+  let baseline = @configscope.ConfigValue::parse_json(
+    "{\"server\":{\"port\":8080},\"features\":[\"audit\"]}",
+  )
+  let candidate = @configscope.ConfigValue::parse_json(
+    "{\"server\":{\"port\":\"9090\"},\"features\":[\"audit\"]}",
+  )
+  let report = baseline.compatibility_with(candidate)
+  println("breaking changes: \{report.breaking_count()}")
+}
+```
+
+Run `moon run cmd/main` from the consumer project. It prints
+`breaking changes: 1` because `server.port` changes from a number to a string.
+This example was checked in a separate project using the published Mooncakes
+package, rather than a local path dependency. The CLI commands described below
+belong to the ConfigScope repository; installing the library does not install
+the CLI as a command in the consumer project.
+
 ### Configuration compatibility
 
 The baseline model is deliberately small and predictable:
