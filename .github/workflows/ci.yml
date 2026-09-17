@@ -59,5 +59,8 @@ jobs:
             exit 1
           fi
 
+      - name: Run cross-platform compatibility demo
+        run: bash demo.sh
+
       - name: Verify published package in a fresh consumer project
         run: python3 scripts/check_published_package.py

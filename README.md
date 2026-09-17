@@ -190,10 +190,16 @@ moon run cmd/main -- contract-check release.contract.json
 
 ### One-command demonstration
 
-For a complete local demonstration, run the repository script:
+For a complete local demonstration, run the repository script for your shell:
 
 ```powershell
 .\demo.ps1
+```
+
+On Linux or macOS:
+
+```sh
+bash demo.sh
 ```
 
 It generates a temporary contract under `_build/demo`, checks a compatible
