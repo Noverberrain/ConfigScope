@@ -58,3 +58,6 @@ jobs:
             echo "Expected the breaking contract check to fail."
             exit 1
           fi
+
+      - name: Verify published package in a fresh consumer project
+        run: python3 scripts/check_published_package.py
