@@ -60,10 +60,12 @@ pub struct ConfigCompatibilityContract {
   candidate_path : String
   baseline_paths : Array[String]
   policy : ConfigCompatibilityPolicy
+  ignored_paths : Array[ConfigPath]
 } derive(Eq, @debug.Debug)
 pub fn ConfigCompatibilityContract::baseline_paths(Self) -> Array[String]
 pub fn ConfigCompatibilityContract::candidate_path(Self) -> String
 pub fn ConfigCompatibilityContract::from_value(ConfigValue) -> Result[Self, String]
+pub fn ConfigCompatibilityContract::ignored_paths(Self) -> Array[ConfigPath]
 pub fn ConfigCompatibilityContract::policy(Self) -> ConfigCompatibilityPolicy
 
 pub(all) enum ConfigCompatibilityImpact {
@@ -88,6 +90,7 @@ pub struct ConfigCompatibilityMatrixReport {
 pub fn ConfigCompatibilityMatrixReport::baseline_count(Self) -> Int
 pub fn ConfigCompatibilityMatrixReport::entries(Self) -> Array[ConfigCompatibilityMatrixEntry]
 pub fn ConfigCompatibilityMatrixReport::entry(Self, Int) -> ConfigCompatibilityMatrixEntry?
+pub fn ConfigCompatibilityMatrixReport::excluding_paths(Self, Array[ConfigPath]) -> Self
 pub fn ConfigCompatibilityMatrixReport::failed_count(Self, ConfigCompatibilityPolicy) -> Int
 pub fn ConfigCompatibilityMatrixReport::passed_count(Self, ConfigCompatibilityPolicy) -> Int
 pub fn ConfigCompatibilityMatrixReport::passes(Self, ConfigCompatibilityPolicy) -> Bool
@@ -108,6 +111,7 @@ pub fn ConfigCompatibilityReport::change(Self, Int) -> ConfigCompatibilityChange
 pub fn ConfigCompatibilityReport::change_count(Self) -> Int
 pub fn ConfigCompatibilityReport::changes(Self) -> Array[ConfigCompatibilityChange]
 pub fn ConfigCompatibilityReport::compatible_count(Self) -> Int
+pub fn ConfigCompatibilityReport::excluding_paths(Self, Array[ConfigPath]) -> Self
 pub fn ConfigCompatibilityReport::is_compatible(Self) -> Bool
 pub fn ConfigCompatibilityReport::passes(Self, ConfigCompatibilityPolicy) -> Bool
 pub fn ConfigCompatibilityReport::violation_count(Self, ConfigCompatibilityPolicy) -> Int

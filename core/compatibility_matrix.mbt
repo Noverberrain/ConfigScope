@@ -134,6 +134,20 @@ pub fn ConfigCompatibilityMatrixReport::passes(
 }
 
 ///|
+/// Return a matrix with changes at the supplied exact paths removed from
+/// every baseline report.
+pub fn ConfigCompatibilityMatrixReport::excluding_paths(
+  self : ConfigCompatibilityMatrixReport,
+  paths : Array[ConfigPath],
+) -> ConfigCompatibilityMatrixReport {
+  let entries = self.entries.map(entry => {
+    baseline_name: entry.baseline_name,
+    report: entry.report.excluding_paths(paths),
+  })
+  { entries, }
+}
+
+///|
 /// Compare a candidate snapshot against multiple historical baselines.
 ///
 /// The receiver is the later candidate snapshot. Each baseline is compared

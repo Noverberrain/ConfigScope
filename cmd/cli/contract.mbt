@@ -115,7 +115,17 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
     Err(error) => return Err(error)
   }
   let policy = contract.policy()
-  let report = candidate.compatibility_matrix(baselines)
+  let ignored_paths = contract.ignored_paths()
+  let report = candidate
+    .compatibility_matrix(baselines)
+    .excluding_paths(ignored_paths)
+  let ignored_text = if ignored_paths.length() == 0 {
+    ""
+  } else {
+    "ignored paths: " +
+    ignored_paths.map(path => path.to_string()).join(", ") +
+    "\n"
+  }
   let output = match format {
     Text =>
       "contract: " +
@@ -124,10 +134,11 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
       "candidate: " +
       candidate_path +
       "\n" +
+      ignored_text +
       render_compatibility_matrix(report, policy)
     Json =>
       render_json_compatibility_contract(
-        manifest_path, candidate_path, report, policy,
+        manifest_path, candidate_path, ignored_paths, report, policy,
       )
   }
   if report.passes(policy) {

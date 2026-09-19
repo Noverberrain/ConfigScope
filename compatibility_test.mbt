@@ -162,3 +162,57 @@ test "empty compatibility matrix passes every policy" {
   assert_true(matrix.passes(NoBehavioralChanges))
   assert_true(matrix.passes(NoChanges))
 }
+
+///|
+test "compatibility reports exclude only exact paths" {
+  let before = @configscope.ConfigValue::object(
+    Map([
+      (
+        "metadata",
+        @configscope.ConfigValue::object(
+          Map([("release_id", @configscope.ConfigValue::string("old"))]),
+        ),
+      ),
+      ("port", @configscope.ConfigValue::number(80.0)),
+    ]),
+  )
+  let after = @configscope.ConfigValue::object(
+    Map([
+      (
+        "metadata",
+        @configscope.ConfigValue::object(
+          Map([("release_id", @configscope.ConfigValue::string("new"))]),
+        ),
+      ),
+      ("port", @configscope.ConfigValue::string("80")),
+    ]),
+  )
+  let report = before.compatibility_with(after)
+  let parent_only = report.excluding_paths([
+    @configscope.parse_path("metadata").unwrap(),
+  ])
+  assert_eq(parent_only.change_count(), 2)
+  let exact = report.excluding_paths([
+    @configscope.parse_path("metadata.release_id").unwrap(),
+  ])
+  assert_eq(exact.change_count(), 1)
+  assert_eq(exact.change(0).unwrap().path().to_string(), "port")
+}
+
+///|
+test "compatibility matrix excludes paths from every baseline" {
+  let candidate = @configscope.ConfigValue::object(
+    Map([("port", @configscope.ConfigValue::string("8080"))]),
+  )
+  let baseline = @configscope.ConfigCompatibilityBaseline::new(
+    "v1",
+    @configscope.ConfigValue::object(
+      Map([("port", @configscope.ConfigValue::number(8080.0))]),
+    ),
+  )
+  let matrix = candidate
+    .compatibility_matrix([baseline])
+    .excluding_paths([@configscope.parse_path("port").unwrap()])
+  assert_true(matrix.passes(BreakingOnly))
+  assert_eq(matrix.entry(0).unwrap().report().change_count(), 0)
+}

@@ -40,6 +40,25 @@ test "contract-check applies the manifest release gate" {
 }
 
 ///|
+test "contract-check excludes exact ignored paths" {
+  assert_eq(
+    @cli.run([
+      "configscope", "contract-check", "cmd/main/testdata/configscope-ignored.contract.json",
+    ]),
+    Ok(
+      "contract: cmd/main/testdata/configscope-ignored.contract.json\n" +
+      "candidate: compatibility-breaking.json\n" +
+      "ignored paths: features, server.port\n" +
+      "gate: breaking\n" +
+      "baseline: basic.json\n" +
+      "result: passed\n" +
+      "summary: passed=1 failed=0 total=1\n" +
+      "compatibility contract passed",
+    ),
+  )
+}
+
+///|
 test "contract-check reports invalid manifests" {
   assert_eq(
     @cli.run(["configscope", "contract-check", "cmd/main/testdata/basic.json"]),
@@ -73,4 +92,18 @@ test "contract-check emits machine-readable JSON" {
   )
   assert_eq(value.field("passed").unwrap().as_boolean(), Some(true))
   assert_eq(value.field("gate").unwrap().as_string(), Some("breaking"))
+  assert_eq(value.field("ignore_paths").unwrap().length(), Some(0))
+}
+
+///|
+test "contract-check reports ignored paths in JSON" {
+  let output = @cli.run([
+    "configscope", "contract-check", "cmd/main/testdata/configscope-ignored.contract.json",
+    "--format", "json",
+  ]).unwrap()
+  let value = @configscope.ConfigValue::parse_json(output)
+  let ignored = value.field("ignore_paths").unwrap()
+  assert_eq(ignored.element(0).unwrap().as_string(), Some("features"))
+  assert_eq(ignored.element(1).unwrap().as_string(), Some("server.port"))
+  assert_eq(value.field("passed").unwrap().as_boolean(), Some(true))
 }

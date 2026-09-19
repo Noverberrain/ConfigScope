@@ -16,7 +16,9 @@ def example_from(readme: Path) -> tuple[str, str, str]:
     section = content.split(SECTION, 1)[1].split("\n### ", 1)[0]
     module = re.search(r"^moon add (\S+)$", section, re.MULTILINE).group(1)
     package = re.search(r"```text\n(.*?)\n```", section, re.DOTALL).group(1)
-    source = re.search(r"```moonbit\n(.*?)\n```", section, re.DOTALL).group(1)
+    source = re.search(
+        r"```moonbit(?: nocheck)?\n(.*?)\n```", section, re.DOTALL
+    ).group(1)
     return module, package, source
 
 

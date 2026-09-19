@@ -231,6 +231,31 @@ pub fn ConfigCompatibilityReport::is_compatible(
 }
 
 ///|
+/// Return a report without changes at the supplied exact paths.
+///
+/// Matching is exact: excluding `metadata` does not exclude
+/// `metadata.release_id`.
+pub fn ConfigCompatibilityReport::excluding_paths(
+  self : ConfigCompatibilityReport,
+  paths : Array[ConfigPath],
+) -> ConfigCompatibilityReport {
+  let changes : Array[ConfigCompatibilityChange] = []
+  self.changes.each(change => {
+    let change_path = change.path()
+    let mut excluded = false
+    for path in paths {
+      if path == change_path {
+        excluded = true
+      }
+    }
+    if !excluded {
+      changes.push(change)
+    }
+  })
+  { changes, }
+}
+
+///|
 /// Classify one value-level difference using the baseline compatibility model.
 fn compatibility_impact(kind : ConfigDiffKind) -> ConfigCompatibilityImpact {
   match kind {

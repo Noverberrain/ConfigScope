@@ -8,13 +8,14 @@ pub struct ConfigCompatibilityContract {
   candidate_path : String
   baseline_paths : Array[String]
   policy : ConfigCompatibilityPolicy
+  ignored_paths : Array[ConfigPath]
 } derive(Eq, Debug)
 
 ///|
 /// Parse a compatibility contract from a JSON-compatible value.
 ///
 /// The accepted shape contains string field `candidate`, a non-empty string
-/// array field `baselines`, and an optional `fail_on` field.
+/// array field `baselines`, and optional `fail_on` and `ignore_paths` fields.
 /// `fail_on` defaults to `breaking`. Unknown object fields are ignored so
 /// the manifest can grow without breaking older clients.
 pub fn ConfigCompatibilityContract::from_value(
@@ -98,7 +99,65 @@ pub fn ConfigCompatibilityContract::from_value(
           )
       }
   }
-  { candidate_path, baseline_paths, policy } |> Ok
+  let ignored_paths : Array[ConfigPath] = []
+  match value.field("ignore_paths") {
+    None => ()
+    Some(paths_value) => {
+      if paths_value.kind() != Array {
+        return Err("contract field 'ignore_paths' must be an array")
+      }
+      let ignored_count = paths_value.length().unwrap()
+      let seen_ignored : Map[String, Bool] = Map([])
+      for index in 0..<ignored_count {
+        let source = match paths_value.element(index) {
+          Some(path_value) =>
+            match path_value.as_string() {
+              Some(source) => source
+              None =>
+                return Err(
+                  "contract ignored path at index " +
+                  index.to_string() +
+                  " must be a non-empty string",
+                )
+            }
+          None =>
+            return Err(
+              "contract ignored path at index " +
+              index.to_string() +
+              " must be a non-empty string",
+            )
+        }
+        if source == "" {
+          return Err(
+            "contract ignored path at index " +
+            index.to_string() +
+            " must be a non-empty string",
+          )
+        }
+        let path = match parse_path(source) {
+          Ok(path) => path
+          Err(error) =>
+            return Err(
+              "contract ignored path '" +
+              source +
+              "' is invalid: " +
+              error.to_string(),
+            )
+        }
+        let canonical = path.to_string()
+        if seen_ignored.contains(canonical) {
+          return Err(
+            "contract field 'ignore_paths' contains duplicate path '" +
+            canonical +
+            "'",
+          )
+        }
+        seen_ignored[canonical] = true
+        ignored_paths.push(path)
+      }
+    }
+  }
+  { candidate_path, baseline_paths, policy, ignored_paths } |> Ok
 }
 
 ///|
@@ -123,4 +182,12 @@ pub fn ConfigCompatibilityContract::policy(
   self : ConfigCompatibilityContract,
 ) -> ConfigCompatibilityPolicy {
   self.policy
+}
+
+///|
+/// Return exact configuration paths excluded by this contract.
+pub fn ConfigCompatibilityContract::ignored_paths(
+  self : ConfigCompatibilityContract,
+) -> Array[ConfigPath] {
+  self.ignored_paths.copy()
 }

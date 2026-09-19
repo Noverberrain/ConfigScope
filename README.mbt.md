@@ -58,7 +58,8 @@ pkgtype(kind: "executable")
 
 Then use the public API in `cmd/main/main.mbt`:
 
-```moonbit
+```moonbit nocheck
+///|
 fn main raise {
   let baseline = @configscope.ConfigValue::parse_json(
     "{\"server\":{\"port\":8080},\"features\":[\"audit\"]}",
@@ -163,7 +164,8 @@ and the release gate in one reviewable file:
 {
   "candidate": "configs/v2.json",
   "baselines": ["configs/v1.json", "configs/v1.5.json"],
-  "fail_on": "breaking"
+  "fail_on": "breaking",
+  "ignore_paths": ["build.timestamp", "metadata.release_id"]
 }
 ```
 
@@ -172,6 +174,12 @@ relative to the manifest, while the report keeps the names written in the
 manifest. The `fail_on` field accepts `breaking`, `behavioral`, or `any`
 and defaults to `breaking`. This keeps release policy in version control
 without adding a configuration loader or a runtime merge mechanism.
+
+The optional `ignore_paths` array excludes known volatile fields from every
+baseline comparison. Matching is exact: ignoring `metadata` does not ignore
+`metadata.release_id`. Entries use the same dot-separated path syntax as the
+compatibility report, and invalid or duplicate paths make the contract fail
+validation instead of silently weakening the release gate.
 
 The repository includes a working example:
 
