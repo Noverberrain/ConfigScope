@@ -256,6 +256,51 @@ pub fn ConfigCompatibilityReport::excluding_paths(
 }
 
 ///|
+/// Return whether a path matches an exact pattern or a trailing `.*` subtree
+/// pattern. A subtree pattern matches descendants, not the prefix itself.
+fn config_path_matches_pattern(pattern : ConfigPath, path : ConfigPath) -> Bool {
+  let pattern_length = pattern.length()
+  let wildcard = pattern_length > 1 &&
+    pattern.segment(pattern_length - 1) == Some("*")
+  if !wildcard {
+    return pattern == path
+  }
+  let prefix_length = pattern_length - 1
+  if path.length() <= prefix_length {
+    return false
+  }
+  for index in 0..<prefix_length {
+    if pattern.segment(index) != path.segment(index) {
+      return false
+    }
+  }
+  true
+}
+
+///|
+/// Return a report without changes matching exact paths or trailing `.*`
+/// subtree patterns.
+pub fn ConfigCompatibilityReport::excluding_path_patterns(
+  self : ConfigCompatibilityReport,
+  patterns : Array[ConfigPath],
+) -> ConfigCompatibilityReport {
+  let changes : Array[ConfigCompatibilityChange] = []
+  self.changes.each(change => {
+    let change_path = change.path()
+    let mut excluded = false
+    for pattern in patterns {
+      if config_path_matches_pattern(pattern, change_path) {
+        excluded = true
+      }
+    }
+    if !excluded {
+      changes.push(change)
+    }
+  })
+  { changes, }
+}
+
+///|
 /// Classify one value-level difference using the baseline compatibility model.
 fn compatibility_impact(kind : ConfigDiffKind) -> ConfigCompatibilityImpact {
   match kind {

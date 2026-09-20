@@ -165,7 +165,7 @@ and the release gate in one reviewable file:
   "candidate": "configs/v2.json",
   "baselines": ["configs/v1.json", "configs/v1.5.json"],
   "fail_on": "breaking",
-  "ignore_paths": ["build.timestamp", "metadata.release_id"]
+  "ignore_paths": ["build.timestamp", "metadata.*"]
 }
 ```
 
@@ -176,10 +176,12 @@ and defaults to `breaking`. This keeps release policy in version control
 without adding a configuration loader or a runtime merge mechanism.
 
 The optional `ignore_paths` array excludes known volatile fields from every
-baseline comparison. Matching is exact: ignoring `metadata` does not ignore
-`metadata.release_id`. Entries use the same dot-separated path syntax as the
-compatibility report, and invalid or duplicate paths make the contract fail
-validation instead of silently weakening the release gate.
+baseline comparison. Entries are exact by default; a final `.*` excludes every
+descendant of that prefix. For example, `metadata.*` matches
+`metadata.release_id` but does not hide a type change at `metadata` itself.
+Arbitrary wildcard positions and a global `*` are rejected. Invalid or
+duplicate entries make the contract fail validation instead of silently
+weakening the release gate.
 
 The repository includes a working example:
 

@@ -59,6 +59,25 @@ test "contract-check excludes exact ignored paths" {
 }
 
 ///|
+test "contract-check excludes ignored subtrees" {
+  assert_eq(
+    @cli.run([
+      "configscope", "contract-check", "cmd/main/testdata/configscope-wildcard.contract.json",
+    ]),
+    Ok(
+      "contract: cmd/main/testdata/configscope-wildcard.contract.json\n" +
+      "candidate: compatibility-breaking.json\n" +
+      "ignored paths: features, server.*\n" +
+      "gate: breaking\n" +
+      "baseline: basic.json\n" +
+      "result: passed\n" +
+      "summary: passed=1 failed=0 total=1\n" +
+      "compatibility contract passed",
+    ),
+  )
+}
+
+///|
 test "contract-check reports invalid manifests" {
   assert_eq(
     @cli.run(["configscope", "contract-check", "cmd/main/testdata/basic.json"]),

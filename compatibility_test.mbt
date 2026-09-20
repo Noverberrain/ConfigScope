@@ -216,3 +216,62 @@ test "compatibility matrix excludes paths from every baseline" {
   assert_true(matrix.passes(BreakingOnly))
   assert_eq(matrix.entry(0).unwrap().report().change_count(), 0)
 }
+
+///|
+test "compatibility reports support trailing subtree patterns" {
+  let before = @configscope.ConfigValue::object(
+    Map([
+      (
+        "metadata",
+        @configscope.ConfigValue::object(
+          Map([
+            ("release_id", @configscope.ConfigValue::string("old")),
+            ("timestamp", @configscope.ConfigValue::number(1.0)),
+          ]),
+        ),
+      ),
+      ("metadata2", @configscope.ConfigValue::string("old")),
+    ]),
+  )
+  let after = @configscope.ConfigValue::object(
+    Map([
+      (
+        "metadata",
+        @configscope.ConfigValue::object(
+          Map([
+            ("release_id", @configscope.ConfigValue::string("new")),
+            ("timestamp", @configscope.ConfigValue::number(2.0)),
+          ]),
+        ),
+      ),
+      ("metadata2", @configscope.ConfigValue::string("new")),
+    ]),
+  )
+  let report = before
+    .compatibility_with(after)
+    .excluding_path_patterns([@configscope.parse_path("metadata.*").unwrap()])
+  assert_eq(report.change_count(), 1)
+  assert_eq(report.change(0).unwrap().path().to_string(), "metadata2")
+}
+
+///|
+test "subtree patterns do not exclude the prefix itself" {
+  let before = @configscope.ConfigValue::object(
+    Map([("metadata", @configscope.ConfigValue::string("old"))]),
+  )
+  let after = @configscope.ConfigValue::object(
+    Map([
+      (
+        "metadata",
+        @configscope.ConfigValue::object(
+          Map([("release_id", @configscope.ConfigValue::string("new"))]),
+        ),
+      ),
+    ]),
+  )
+  let report = before
+    .compatibility_with(after)
+    .excluding_path_patterns([@configscope.parse_path("metadata.*").unwrap()])
+  assert_eq(report.change_count(), 1)
+  assert_eq(report.change(0).unwrap().path().to_string(), "metadata")
+}

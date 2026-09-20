@@ -144,6 +144,16 @@ pub fn ConfigCompatibilityContract::from_value(
               error.to_string(),
             )
         }
+        for segment_index in 0..<path.length() {
+          if path.segment(segment_index) == Some("*") &&
+            (segment_index == 0 || segment_index != path.length() - 1) {
+            return Err(
+              "contract ignored path '" +
+              source +
+              "' must use '*' only as a final segment after a path prefix",
+            )
+          }
+        }
         let canonical = path.to_string()
         if seen_ignored.contains(canonical) {
           return Err(

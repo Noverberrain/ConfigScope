@@ -48,6 +48,31 @@ test "compatibility contract parses exact ignored paths" {
 }
 
 ///|
+test "compatibility contract accepts trailing subtree patterns" {
+  let value = @configscope.ConfigValue::object(
+    Map([
+      ("candidate", @configscope.ConfigValue::string("candidate.json")),
+      (
+        "baselines",
+        @configscope.ConfigValue::array([
+          @configscope.ConfigValue::string("baseline.json"),
+        ]),
+      ),
+      (
+        "ignore_paths",
+        @configscope.ConfigValue::array([
+          @configscope.ConfigValue::string("metadata.*"),
+        ]),
+      ),
+    ]),
+  )
+  let patterns = @configscope.ConfigCompatibilityContract::from_value(value)
+    .unwrap()
+    .ignored_paths()
+  assert_eq(patterns.map(path => path.to_string()), ["metadata.*"])
+}
+
+///|
 test "compatibility contract parses stricter gates" {
   let value = @configscope.ConfigValue::object(
     Map([
@@ -218,5 +243,27 @@ test "compatibility contract validates ignored paths" {
       ),
     ),
     Err("contract field 'ignore_paths' contains duplicate path 'server.port'"),
+  )
+  assert_eq(
+    @configscope.ConfigCompatibilityContract::from_value(
+      contract_with(
+        @configscope.ConfigValue::array([
+          @configscope.ConfigValue::string("server.*.token"),
+        ]),
+      ),
+    ),
+    Err(
+      "contract ignored path 'server.*.token' must use '*' only as a final segment after a path prefix",
+    ),
+  )
+  assert_eq(
+    @configscope.ConfigCompatibilityContract::from_value(
+      contract_with(
+        @configscope.ConfigValue::array([@configscope.ConfigValue::string("*")]),
+      ),
+    ),
+    Err(
+      "contract ignored path '*' must use '*' only as a final segment after a path prefix",
+    ),
   )
 }

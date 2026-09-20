@@ -148,6 +148,20 @@ pub fn ConfigCompatibilityMatrixReport::excluding_paths(
 }
 
 ///|
+/// Return a matrix with changes matching exact paths or trailing `.*` subtree
+/// patterns removed from every baseline report.
+pub fn ConfigCompatibilityMatrixReport::excluding_path_patterns(
+  self : ConfigCompatibilityMatrixReport,
+  patterns : Array[ConfigPath],
+) -> ConfigCompatibilityMatrixReport {
+  let entries = self.entries.map(entry => {
+    baseline_name: entry.baseline_name,
+    report: entry.report.excluding_path_patterns(patterns),
+  })
+  { entries, }
+}
+
+///|
 /// Compare a candidate snapshot against multiple historical baselines.
 ///
 /// The receiver is the later candidate snapshot. Each baseline is compared

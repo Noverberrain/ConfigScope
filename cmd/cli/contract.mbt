@@ -118,7 +118,7 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
   let ignored_paths = contract.ignored_paths()
   let report = candidate
     .compatibility_matrix(baselines)
-    .excluding_paths(ignored_paths)
+    .excluding_path_patterns(ignored_paths)
   let ignored_text = if ignored_paths.length() == 0 {
     ""
   } else {
