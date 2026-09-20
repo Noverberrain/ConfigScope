@@ -39,11 +39,11 @@ ConfigScope focuses on compatibility between released configuration versions.
 
 ### Use from another MoonBit project
 
-The published library is `Noverberrain/configscope@0.1.0`. From the root of
+The published library is `Noverberrain/configscope@0.2.0`. From the root of
 your own MoonBit project, add it as a dependency:
 
 ```sh
-moon add Noverberrain/configscope@0.1.0
+moon add Noverberrain/configscope@0.2.0
 ```
 
 Import the root package in the consumer's `cmd/main/moon.pkg`:
