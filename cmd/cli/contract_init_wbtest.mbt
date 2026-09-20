@@ -5,6 +5,7 @@ test "contract-init renders paths relative to its output file" {
     "cmd/main/testdata/compatibility-compatible.json",
     ["cmd/main/testdata/basic.json"],
     NoBehavioralChanges,
+    [],
   )
   let value = @configscope.ConfigValue::parse_json(output)
   assert_eq(
@@ -16,6 +17,21 @@ test "contract-init renders paths relative to its output file" {
     Some("../cmd/main/testdata/basic.json"),
   )
   assert_eq(value.field("fail_on").unwrap().as_string(), Some("behavioral"))
+}
+
+///|
+test "contract-init renders ignored paths in input order" {
+  let output = render_contract_init_manifest(
+    "generated/configscope.contract.json",
+    "cmd/main/testdata/compatibility-compatible.json",
+    ["cmd/main/testdata/basic.json"],
+    BreakingOnly,
+    ["build.timestamp", "metadata.*"],
+  )
+  let value = @configscope.ConfigValue::parse_json(output)
+  let ignored = value.field("ignore_paths").unwrap()
+  assert_eq(ignored.element(0).unwrap().as_string(), Some("build.timestamp"))
+  assert_eq(ignored.element(1).unwrap().as_string(), Some("metadata.*"))
 }
 
 ///|
@@ -45,6 +61,28 @@ test "contract-init creates a contract that contract-check can consume" {
 }
 
 ///|
+test "contract-init creates a contract with ignore rules" {
+  let output = "cmd/main/testdata/contract-init-ignore-test.contract.json"
+  if @fs.path_exists(output) {
+    ignore(@fs.remove_file(output) catch { _ => () })
+  }
+  let result = run([
+    "configscope", "contract-init", "cmd/main/testdata/compatibility-breaking.json",
+    "cmd/main/testdata/basic.json", "--ignore-path", "features", "--ignore-path",
+    "server.*", "--output", output,
+  ]).unwrap()
+  assert_true(result.has_suffix("ignored paths: 2"))
+  let generated = try! @fs.read_file_to_string(output)
+  let manifest = @configscope.ConfigValue::parse_json(generated)
+  let ignored = manifest.field("ignore_paths").unwrap()
+  assert_eq(ignored.element(0).unwrap().as_string(), Some("features"))
+  assert_eq(ignored.element(1).unwrap().as_string(), Some("server.*"))
+  let check = run(["configscope", "contract-check", output]).unwrap()
+  assert_true(check.has_suffix("compatibility contract passed"))
+  try! @fs.remove_file(output)
+}
+
+///|
 test "contract-init validates inputs before writing" {
   assert_eq(
     run([
@@ -62,6 +100,29 @@ test "contract-init validates inputs before writing" {
     Err(
       "contract-init received duplicate baseline 'cmd/main/testdata/basic.json'",
     ),
+  )
+}
+
+///|
+test "contract-init validates ignore path options" {
+  let prefix = [
+    "configscope", "contract-init", "cmd/main/testdata/compatibility-compatible.json",
+    "cmd/main/testdata/basic.json",
+  ]
+  assert_eq(
+    run(prefix + ["--ignore-path"]),
+    Err("missing value after --ignore-path"),
+  )
+  assert_eq(
+    run(prefix + ["--ignore-path", "server.*.token"]),
+    Err(
+      "invalid --ignore-path 'server.*.token': " +
+      "'*' must be the final segment after a path prefix",
+    ),
+  )
+  assert_eq(
+    run(prefix + ["--ignore-path", "server.*", "--ignore-path", "server.*"]),
+    Err("contract-init received duplicate ignore path 'server.*'"),
   )
 }
 

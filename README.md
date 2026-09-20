@@ -194,9 +194,12 @@ and writes the manifest for you. It stores paths relative to the output file,
 uses portable `/` separators, and refuses to overwrite an existing file:
 
 ```text
-moon run cmd/main -- contract-init cmd/main/testdata/compatibility-compatible.json cmd/main/testdata/basic.json --output release.contract.json
+moon run cmd/main -- contract-init cmd/main/testdata/compatibility-compatible.json cmd/main/testdata/basic.json --ignore-path build.timestamp --ignore-path 'metadata.*' --output release.contract.json
 moon run cmd/main -- contract-check release.contract.json
 ```
+
+Repeat `--ignore-path` to write reviewed exact paths or trailing `.*` subtree
+patterns directly into the generated manifest.
 
 ### One-command demonstration
 

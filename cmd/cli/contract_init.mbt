@@ -5,6 +5,30 @@ priv struct ContractInitArguments {
   baseline_paths : Array[String]
   policy : @configscope.ConfigCompatibilityPolicy
   output_path : String
+  ignored_paths : Array[String]
+}
+
+///|
+/// Validate one exact path or trailing `.*` subtree pattern.
+fn validate_contract_init_ignore_path(
+  source : String,
+) -> Result[String, String] {
+  let path = match @configscope.parse_path(source) {
+    Ok(path) => path
+    Err(error) =>
+      return Err("invalid --ignore-path '" + source + "': " + error.to_string())
+  }
+  for index in 0..<path.length() {
+    if path.segment(index) == Some("*") &&
+      (index == 0 || index != path.length() - 1) {
+      return Err(
+        "invalid --ignore-path '" +
+        source +
+        "': '*' must be the final segment after a path prefix",
+      )
+    }
+  }
+  Ok(path.to_string())
 }
 
 ///|
@@ -17,12 +41,14 @@ fn parse_contract_init_arguments(
   seen_baselines : Map[String, Bool],
   policy : @configscope.ConfigCompatibilityPolicy,
   output_path : String,
+  ignored_paths : Array[String],
+  seen_ignored : Map[String, Bool],
 ) -> Result[ContractInitArguments, String] {
   if index >= args.length() {
     if baseline_paths.length() == 0 {
       Err("contract-init requires at least one baseline file")
     } else {
-      Ok({ candidate_path, baseline_paths, policy, output_path })
+      Ok({ candidate_path, baseline_paths, policy, output_path, ignored_paths })
     }
   } else {
     match args.get(index) {
@@ -39,6 +65,8 @@ fn parse_contract_init_arguments(
                   seen_baselines,
                   next_policy,
                   output_path,
+                  ignored_paths,
+                  seen_ignored,
                 )
               Err(error) => Err(error)
             }
@@ -58,9 +86,45 @@ fn parse_contract_init_arguments(
                 seen_baselines,
                 policy,
                 value,
+                ignored_paths,
+                seen_ignored,
               )
             }
           None => Err("missing value after --output")
+        }
+      Some("--ignore-path") =>
+        match args.get(index + 1) {
+          Some(value) =>
+            if value.has_prefix("--") {
+              Err("missing value after --ignore-path")
+            } else {
+              match validate_contract_init_ignore_path(value) {
+                Ok(path) =>
+                  if seen_ignored.contains(path) {
+                    Err(
+                      "contract-init received duplicate ignore path '" +
+                      path +
+                      "'",
+                    )
+                  } else {
+                    seen_ignored[path] = true
+                    ignored_paths.push(path)
+                    parse_contract_init_arguments(
+                      args,
+                      index + 2,
+                      candidate_path,
+                      baseline_paths,
+                      seen_baselines,
+                      policy,
+                      output_path,
+                      ignored_paths,
+                      seen_ignored,
+                    )
+                  }
+                Err(error) => Err(error)
+              }
+            }
+          None => Err("missing value after --ignore-path")
         }
       Some(path) =>
         if path.has_prefix("--") {
@@ -78,6 +142,8 @@ fn parse_contract_init_arguments(
             seen_baselines,
             policy,
             output_path,
+            ignored_paths,
+            seen_ignored,
           )
         }
       None => Err("invalid contract-init arguments")
@@ -124,24 +190,29 @@ fn render_contract_init_manifest(
   candidate_path : String,
   baseline_paths : Array[String],
   policy : @configscope.ConfigCompatibilityPolicy,
+  ignored_paths : Array[String],
 ) -> String {
-  let manifest = Json::object(
-    Map([
-      (
-        "candidate",
-        Json::string(contract_init_entry_path(manifest_path, candidate_path)),
+  let fields : Map[String, Json] = Map([
+    (
+      "candidate",
+      Json::string(contract_init_entry_path(manifest_path, candidate_path)),
+    ),
+    (
+      "baselines",
+      Json::array(
+        baseline_paths.map(path => {
+          Json::string(contract_init_entry_path(manifest_path, path))
+        }),
       ),
-      (
-        "baselines",
-        Json::array(
-          baseline_paths.map(path => {
-            Json::string(contract_init_entry_path(manifest_path, path))
-          }),
-        ),
-      ),
-      ("fail_on", Json::string(policy.to_string())),
-    ]),
-  )
+    ),
+    ("fail_on", Json::string(policy.to_string())),
+  ])
+  if ignored_paths.length() > 0 {
+    fields["ignore_paths"] = Json::array(
+      ignored_paths.map(path => Json::string(path)),
+    )
+  }
+  let manifest = Json::object(fields)
   manifest.stringify(indent=2) + "\n"
 }
 
@@ -161,6 +232,8 @@ fn run_contract_init(args : Array[String]) -> Result[String, String] {
       Map([]),
       BreakingOnly,
       "configscope.contract.json",
+      [],
+      Map([]),
     ) {
     Ok(parsed) => parsed
     Err(error) => return Err(error)
@@ -185,11 +258,17 @@ fn run_contract_init(args : Array[String]) -> Result[String, String] {
     parsed.candidate_path,
     parsed.baseline_paths,
     parsed.policy,
+    parsed.ignored_paths,
   )
   let write_result : Result[Unit, String] = Ok(
     @fs.write_string_to_file(parsed.output_path, manifest),
   ) catch {
     _ => Err("cannot write contract file '" + parsed.output_path + "'")
+  }
+  let ignored_summary = if parsed.ignored_paths.length() == 0 {
+    ""
+  } else {
+    "\nignored paths: " + parsed.ignored_paths.length().to_string()
   }
   match write_result {
     Ok(_) =>
@@ -201,7 +280,8 @@ fn run_contract_init(args : Array[String]) -> Result[String, String] {
         "\nbaselines: " +
         parsed.baseline_paths.length().to_string() +
         "\ngate: " +
-        parsed.policy.to_string(),
+        parsed.policy.to_string() +
+        ignored_summary,
       )
     Err(error) => Err(error)
   }
