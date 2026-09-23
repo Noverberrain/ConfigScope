@@ -9,6 +9,12 @@ pub struct ConfigExplanation {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigExplanation with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigExplanation with Debug::{to_repr}
+
+///|
 /// Return the explained configuration path.
 pub fn ConfigExplanation::path(self : ConfigExplanation) -> ConfigPath {
   self.path

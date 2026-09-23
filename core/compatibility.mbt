@@ -11,6 +11,12 @@ pub(all) enum ConfigCompatibilityImpact {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigCompatibilityImpact with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityImpact with Debug::{to_repr}
+
+///|
 /// Selects which compatibility impacts should fail a release gate.
 ///
 /// `BreakingOnly` is the default and rejects only breaking changes.
@@ -23,6 +29,12 @@ pub(all) enum ConfigCompatibilityPolicy {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigCompatibilityPolicy with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityPolicy with Debug::{to_repr}
+
+///|
 /// A configuration difference together with its compatibility impact.
 pub struct ConfigCompatibilityChange {
   difference : ConfigDiff
@@ -30,10 +42,22 @@ pub struct ConfigCompatibilityChange {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigCompatibilityChange with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityChange with Debug::{to_repr}
+
+///|
 /// The compatibility result for an earlier and a later configuration value.
 pub struct ConfigCompatibilityReport {
   changes : Array[ConfigCompatibilityChange]
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigCompatibilityReport with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityReport with Debug::{to_repr}
 
 ///|
 /// Return a stable lowercase name for a compatibility impact.

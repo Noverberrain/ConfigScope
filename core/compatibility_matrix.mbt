@@ -6,6 +6,12 @@ pub struct ConfigCompatibilityBaseline {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigCompatibilityBaseline with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityBaseline with Debug::{to_repr}
+
+///|
 /// Create a named compatibility baseline.
 pub fn ConfigCompatibilityBaseline::new(
   name : String,
@@ -28,6 +34,12 @@ pub struct ConfigCompatibilityMatrixEntry {
   baseline_name : String
   report : ConfigCompatibilityReport
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigCompatibilityMatrixEntry with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityMatrixEntry with Debug::{to_repr}
 
 ///|
 /// Return the name of the historical baseline.
@@ -68,6 +80,12 @@ pub fn ConfigCompatibilityMatrixEntry::violation_count(
 pub struct ConfigCompatibilityMatrixReport {
   entries : Array[ConfigCompatibilityMatrixEntry]
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigCompatibilityMatrixReport with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityMatrixReport with Debug::{to_repr}
 
 ///|
 /// Return one matrix entry in the original baseline order.

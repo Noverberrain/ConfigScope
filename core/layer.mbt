@@ -6,6 +6,12 @@ pub struct ConfigLayer {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigLayer with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigLayer with Debug::{to_repr}
+
+///|
 /// Create a configuration layer with a source name and value.
 pub fn ConfigLayer::new(name : String, value : ConfigValue) -> ConfigLayer {
   { name, value }

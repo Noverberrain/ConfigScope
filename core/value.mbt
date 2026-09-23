@@ -10,6 +10,12 @@ pub(all) enum ConfigValueKind {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigValueKind with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigValueKind with Debug::{to_repr}
+
+///|
 /// A path at which recursive merge encountered incompatible structures.
 pub struct ConfigConflict {
   path : ConfigPath
@@ -18,11 +24,23 @@ pub struct ConfigConflict {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigConflict with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigConflict with Debug::{to_repr}
+
+///|
 /// The merged value and structural conflicts found while producing it.
 pub struct MergeResult {
   value : ConfigValue
   conflicts : Array[ConfigConflict]
 } derive(Eq, Debug)
+
+///|
+pub extend MergeResult with Eq::{not_equal, equal}
+
+///|
+pub extend MergeResult with Debug::{to_repr}
 
 ///|
 /// Return the path where this conflict occurred.
@@ -71,6 +89,12 @@ pub fn MergeResult::conflict(
 pub struct ConfigValue {
   raw : Json
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigValue with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigValue with Debug::{to_repr}
 
 ///|
 /// Construct a null configuration value.

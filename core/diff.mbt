@@ -8,6 +8,12 @@ pub(all) enum ConfigDiffKind {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigDiffKind with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigDiffKind with Debug::{to_repr}
+
+///|
 /// A single difference between an earlier and a later configuration value.
 pub struct ConfigDiff {
   path : ConfigPath
@@ -15,6 +21,12 @@ pub struct ConfigDiff {
   before : ConfigValue?
   after : ConfigValue?
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigDiff with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigDiff with Debug::{to_repr}
 
 ///|
 /// Return the path at which this difference occurred.

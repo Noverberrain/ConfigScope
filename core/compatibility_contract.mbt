@@ -12,6 +12,12 @@ pub struct ConfigCompatibilityContract {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigCompatibilityContract with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigCompatibilityContract with Debug::{to_repr}
+
+///|
 /// Parse a compatibility contract from a JSON-compatible value.
 ///
 /// The accepted shape contains string field `candidate`, a non-empty string

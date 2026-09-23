@@ -7,6 +7,12 @@ pub struct LayeredMergeResult {
 } derive(Eq, Debug)
 
 ///|
+pub extend LayeredMergeResult with Eq::{not_equal, equal}
+
+///|
+pub extend LayeredMergeResult with Debug::{to_repr}
+
+///|
 /// Return the merged configuration value.
 pub fn LayeredMergeResult::value(self : LayeredMergeResult) -> ConfigValue {
   self.value

@@ -9,11 +9,23 @@ pub(all) enum ConfigAuditRule {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigAuditRule with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigAuditRule with Debug::{to_repr}
+
+///|
 /// Describes why a configuration audit reported an issue.
 pub(all) enum ConfigAuditIssueKind {
   MissingRequired
   TypeMismatch
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigAuditIssueKind with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigAuditIssueKind with Debug::{to_repr}
 
 ///|
 /// A single issue found while auditing a configuration value.
@@ -23,6 +35,12 @@ pub struct ConfigAuditIssue {
   expected_kind : ConfigValueKind?
   actual_kind : ConfigValueKind?
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigAuditIssue with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigAuditIssue with Debug::{to_repr}
 
 ///|
 /// Create a rule that requires one configuration path to be present.

@@ -9,11 +9,23 @@ pub struct ConfigPath {
 } derive(Eq, Debug)
 
 ///|
+pub extend ConfigPath with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigPath with Debug::{to_repr}
+
+///|
 /// Describes why a textual configuration path could not be parsed.
 pub(all) enum ConfigPathError {
   EmptyPath
   EmptySegment(Int)
 } derive(Eq, Debug)
+
+///|
+pub extend ConfigPathError with Eq::{not_equal, equal}
+
+///|
+pub extend ConfigPathError with Debug::{to_repr}
 
 ///|
 /// Parse a simple dot-separated configuration path.

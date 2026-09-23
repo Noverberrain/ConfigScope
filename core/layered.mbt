@@ -8,6 +8,12 @@ pub struct LayeredConfig {
 } derive(Eq, Debug)
 
 ///|
+pub extend LayeredConfig with Eq::{not_equal, equal}
+
+///|
+pub extend LayeredConfig with Debug::{to_repr}
+
+///|
 /// Create an ordered configuration from the supplied layers.
 ///
 /// The input array is copied, so later changes to the caller's array do not
