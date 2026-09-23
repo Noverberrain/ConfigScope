@@ -84,6 +84,17 @@ fn read_contract_baselines(
 }
 
 ///|
+/// Count changes across baselines; the same path in different baselines
+/// contributes once per comparison.
+fn contract_change_count(
+  report : @configscope.ConfigCompatibilityMatrixReport,
+) -> Int {
+  report
+  .entries()
+  .fold(init=0, (count, entry) => count + entry.report().change_count())
+}
+
+///|
 /// Check a candidate snapshot against the baselines declared by a contract.
 fn run_contract_check(args : Array[String]) -> Result[String, String] {
   let manifest_path = args.get(2).unwrap()
@@ -116,14 +127,17 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
   }
   let policy = contract.policy()
   let ignored_paths = contract.ignored_paths()
-  let report = candidate
-    .compatibility_matrix(baselines)
-    .excluding_path_patterns(ignored_paths)
+  let unfiltered_report = candidate.compatibility_matrix(baselines)
+  let report = unfiltered_report.excluding_path_patterns(ignored_paths)
+  let ignored_change_count = contract_change_count(unfiltered_report) -
+    contract_change_count(report)
   let ignored_text = if ignored_paths.length() == 0 {
     ""
   } else {
     "ignored paths: " +
     ignored_paths.map(path => path.to_string()).join(", ") +
+    "\nignored changes: " +
+    ignored_change_count.to_string() +
     "\n"
   }
   let output = match format {
@@ -138,7 +152,8 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
       render_compatibility_matrix(report, policy)
     Json =>
       render_json_compatibility_contract(
-        manifest_path, candidate_path, ignored_paths, report, policy,
+        manifest_path, candidate_path, ignored_paths, ignored_change_count, report,
+        policy,
       )
   }
   if report.passes(policy) {

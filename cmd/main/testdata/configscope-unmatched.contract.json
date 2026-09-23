@@ -1,0 +1,5 @@
+{
+  "candidate": "compatibility-compatible.json",
+  "baselines": ["basic.json"],
+  "ignore_paths": ["missing.path"]
+}

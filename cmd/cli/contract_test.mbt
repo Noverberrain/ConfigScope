@@ -49,6 +49,7 @@ test "contract-check excludes exact ignored paths" {
       "contract: cmd/main/testdata/configscope-ignored.contract.json\n" +
       "candidate: compatibility-breaking.json\n" +
       "ignored paths: features, server.port\n" +
+      "ignored changes: 2\n" +
       "gate: breaking\n" +
       "baseline: basic.json\n" +
       "result: passed\n" +
@@ -68,6 +69,7 @@ test "contract-check excludes ignored subtrees" {
       "contract: cmd/main/testdata/configscope-wildcard.contract.json\n" +
       "candidate: compatibility-breaking.json\n" +
       "ignored paths: features, server.*\n" +
+      "ignored changes: 2\n" +
       "gate: breaking\n" +
       "baseline: basic.json\n" +
       "result: passed\n" +
@@ -112,6 +114,7 @@ test "contract-check emits machine-readable JSON" {
   assert_eq(value.field("passed").unwrap().as_boolean(), Some(true))
   assert_eq(value.field("gate").unwrap().as_string(), Some("breaking"))
   assert_eq(value.field("ignore_paths").unwrap().length(), Some(0))
+  assert_eq(value.field("ignored_change_count").unwrap().as_number(), Some(0.0))
 }
 
 ///|
@@ -124,5 +127,35 @@ test "contract-check reports ignored paths in JSON" {
   let ignored = value.field("ignore_paths").unwrap()
   assert_eq(ignored.element(0).unwrap().as_string(), Some("features"))
   assert_eq(ignored.element(1).unwrap().as_string(), Some("server.port"))
+  assert_eq(value.field("ignored_change_count").unwrap().as_number(), Some(2.0))
   assert_eq(value.field("passed").unwrap().as_boolean(), Some(true))
+}
+
+///|
+test "contract-check counts zero changes when an ignore rule matches nothing" {
+  let output = @cli.run([
+    "configscope", "contract-check", "cmd/main/testdata/configscope-unmatched.contract.json",
+    "--format", "json",
+  ]).unwrap()
+  let value = @configscope.ConfigValue::parse_json(output)
+  assert_eq(value.field("ignored_change_count").unwrap().as_number(), Some(0.0))
+}
+
+///|
+test "contract-check counts ignored changes across baselines" {
+  let result = @cli.run([
+    "configscope", "contract-check", "cmd/main/testdata/configscope-ignored-matrix.contract.json",
+    "--format", "json",
+  ])
+  let output = match result {
+    Ok(_) => abort("contract should fail on the remaining logging change")
+    Err(output) => output
+  }
+  let value = @configscope.ConfigValue::parse_json(output)
+  assert_eq(value.field("ignored_change_count").unwrap().as_number(), Some(4.0))
+  assert_eq(value.field("passed").unwrap().as_boolean(), Some(false))
+  assert_eq(
+    value.field("summary").unwrap().field("failed").unwrap().as_number(),
+    Some(1.0),
+  )
 }

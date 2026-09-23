@@ -110,6 +110,7 @@ fn render_json_compatibility_contract(
   manifest_path : String,
   candidate_path : String,
   ignored_paths : Array[@configscope.ConfigPath],
+  ignored_change_count : Int,
   report : @configscope.ConfigCompatibilityMatrixReport,
   policy : @configscope.ConfigCompatibilityPolicy,
 ) -> String {
@@ -122,6 +123,7 @@ fn render_json_compatibility_contract(
         "ignore_paths",
         Json::array(ignored_paths.map(path => json_string(path.to_string()))),
       ),
+      ("ignored_change_count", json_int(ignored_change_count)),
       ("gate", json_string(policy.to_string())),
       ("passed", Json::boolean(report.passes(policy))),
       (

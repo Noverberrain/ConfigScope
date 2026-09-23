@@ -182,6 +182,9 @@ descendant of that prefix. For example, `metadata.*` matches
 Arbitrary wildcard positions and a global `*` are rejected. Invalid or
 duplicate entries make the contract fail validation instead of silently
 weakening the release gate.
+The contract report shows how many changes were actually ignored across all
+baseline comparisons (counting a change once per baseline), including zero
+when rules match nothing. JSON output exposes this as `ignored_change_count`.
 
 The repository includes a working example:
 

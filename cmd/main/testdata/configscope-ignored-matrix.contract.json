@@ -1,0 +1,5 @@
+{
+  "candidate": "compatibility-breaking.json",
+  "baselines": ["basic.json", "compatibility-compatible.json"],
+  "ignore_paths": ["features", "server.port"]
+}
