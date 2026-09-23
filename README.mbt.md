@@ -608,6 +608,8 @@ nested object fields.
 
 GitHub Actions now runs `contract-check` on pushes and pull requests, so a
 breaking change in the checked contract can block the workflow before release.
+Its run summary also shows the gate result, per-baseline counts, ignored-change
+count, and violating paths without revealing configuration values.
 
 ### JSON reports
 

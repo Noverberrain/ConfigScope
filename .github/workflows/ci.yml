@@ -42,6 +42,9 @@ jobs:
       - name: Run tests
         run: moon test --deny-warn
 
+      - name: Test contract summary renderer
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+
       - name: Verify generated interfaces
         shell: bash
         run: |
@@ -49,7 +52,15 @@ jobs:
           git diff --exit-code -- '*.mbti'
 
       - name: Check versioned compatibility contract
-        run: moon run cmd/main -- contract-check configscope.contract.json
+        shell: bash
+        run: |
+          set +e
+          moon run cmd/main -- contract-check configscope.contract.json --format json > "$RUNNER_TEMP/configscope-contract.json"
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/configscope-contract.json"
+          python3 scripts/render_contract_summary.py "$RUNNER_TEMP/configscope-contract.json" >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
 
       - name: Verify breaking changes fail the gate
         shell: bash
