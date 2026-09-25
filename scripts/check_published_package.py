@@ -32,7 +32,7 @@ def main() -> None:
         raise SystemExit("The published-package examples in the two READMEs differ")
 
     module, package, source = example
-    if module != "Noverberrain/configscope@0.2.0":
+    if module != "Noverberrain/configscope@0.3.0":
         raise SystemExit(f"Unexpected published module: {module}")
 
     with tempfile.TemporaryDirectory(prefix="configscope-consumer-") as directory:

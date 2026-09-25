@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - 2026-09-25
+
+- Report the actual number of ignored changes across contract baselines in
+  text and JSON output, including zero when rules match nothing.
+- Show compatibility contract results in the GitHub Actions run summary and
+  retain the value-free JSON report as a downloadable artifact.
+- Explicitly attach derived `Eq` and `Debug` methods and qualify black-box
+  test imports for the current MoonBit toolchain.
+
 ## 0.2.0 - 2026-09-20
 
 - Added deterministic configuration compatibility reports and release gates.
