@@ -596,6 +596,8 @@ GitHub Actions now runs `contract-check` on pushes and pull requests, so a
 breaking change in the checked contract can block the workflow before release.
 Its run summary also shows the gate result, per-baseline counts, ignored-change
 count, and violating paths without revealing configuration values.
+The same run saves the value-free JSON result as the `configscope-contract-report`
+Artifact for 14 days, including when the contract gate fails.
 
 ### JSON reports
 
