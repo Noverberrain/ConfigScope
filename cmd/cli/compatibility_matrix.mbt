@@ -19,7 +19,7 @@ fn parse_compatibility_matrix_arguments(
     if baseline_paths.length() == 0 {
       Err("compat-matrix requires at least one baseline file")
     } else {
-      Ok({ baseline_paths, policy, format })
+      Ok({ baseline_paths, policy, format, })
     }
   } else {
     match args.get(index) {

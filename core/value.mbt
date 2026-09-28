@@ -99,25 +99,25 @@ pub extend ConfigValue with Debug::{to_repr}
 ///|
 /// Construct a null configuration value.
 pub fn ConfigValue::null() -> ConfigValue {
-  { raw: Json::null() }
+  { raw: Json::null(), }
 }
 
 ///|
 /// Construct a boolean configuration value.
 pub fn ConfigValue::boolean(value : Bool) -> ConfigValue {
-  { raw: Json::boolean(value) }
+  { raw: Json::boolean(value), }
 }
 
 ///|
 /// Construct a numeric configuration value.
 pub fn ConfigValue::number(value : Double) -> ConfigValue {
-  { raw: Json::number(value) }
+  { raw: Json::number(value), }
 }
 
 ///|
 /// Construct a string configuration value.
 pub fn ConfigValue::string(value : String) -> ConfigValue {
-  { raw: Json::string(value) }
+  { raw: Json::string(value), }
 }
 
 ///|
@@ -131,7 +131,7 @@ pub fn ConfigValue::to_json_string(self : ConfigValue) -> String {
 ///
 /// The input array is copied into the private representation.
 pub fn ConfigValue::array(values : Array[ConfigValue]) -> ConfigValue {
-  { raw: Json::array(values.map(value => value.raw)) }
+  { raw: Json::array(values.map(value => value.raw)), }
 }
 
 ///|
@@ -142,13 +142,13 @@ pub fn ConfigValue::array(values : Array[ConfigValue]) -> ConfigValue {
 pub fn ConfigValue::object(fields : Map[String, ConfigValue]) -> ConfigValue {
   let raw_fields : Map[String, Json] = Map([])
   fields.each((key, value) => raw_fields[key] = value.raw)
-  { raw: Json::object(raw_fields) }
+  { raw: Json::object(raw_fields), }
 }
 
 ///|
 /// Construct an empty object configuration value.
 pub fn ConfigValue::empty_object() -> ConfigValue {
-  { raw: Json::empty_object() }
+  { raw: Json::empty_object(), }
 }
 
 ///|
@@ -293,9 +293,9 @@ pub fn ConfigValue::merge(
       let merged_fields : Map[String, Json] = Map([])
       base_fields.each((key, value) => merged_fields[key] = value)
       later_fields.each((key, value) => merged_fields[key] = value)
-      { raw: Json::object(merged_fields) }
+      { raw: Json::object(merged_fields), }
     }
-    (_, later_raw) => { raw: later_raw }
+    (_, later_raw) => { raw: later_raw, }
   }
 }
 
@@ -367,7 +367,7 @@ pub fn ConfigValue::deep_merge_with_report(
 ) -> MergeResult {
   let conflicts : Array[ConfigConflict] = []
   let merged = deep_merge_with_report_raw(self.raw, later.raw, [], conflicts)
-  { value: { raw: merged }, conflicts }
+  { value: { raw: merged, }, conflicts, }
 }
 
 ///|
@@ -379,7 +379,7 @@ pub fn ConfigValue::deep_merge(
   self : ConfigValue,
   later : ConfigValue,
 ) -> ConfigValue {
-  { raw: deep_merge_raw(self.raw, later.raw) }
+  { raw: deep_merge_raw(self.raw, later.raw), }
 }
 
 ///|
@@ -389,5 +389,5 @@ pub fn ConfigValue::deep_merge(
 pub fn ConfigValue::parse_json(
   source : String,
 ) -> ConfigValue raise @json.ParseError {
-  { raw: @json.parse(source) }
+  { raw: @json.parse(source), }
 }

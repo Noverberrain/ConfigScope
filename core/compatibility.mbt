@@ -347,6 +347,9 @@ pub fn ConfigValue::compatibility_with(
 ) -> ConfigCompatibilityReport {
   let changes = self
     .diff(later)
-    .map(diff => { difference: diff, impact: compatibility_impact(diff.kind()) })
+    .map(diff => {
+      difference: diff,
+      impact: compatibility_impact(diff.kind()),
+    })
   { changes, }
 }

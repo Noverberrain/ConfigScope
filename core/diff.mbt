@@ -109,7 +109,7 @@ fn diff_raw(
               differences,
               next_segments,
               Removed,
-              Some({ raw: before_value }),
+              Some({ raw: before_value, }),
               None,
             )
           (None, Some(after_value)) =>
@@ -118,15 +118,15 @@ fn diff_raw(
               next_segments,
               Added,
               None,
-              Some({ raw: after_value }),
+              Some({ raw: after_value, }),
             )
           (None, None) => ()
         }
       }
     }
     (before_value, after_value) => {
-      let before_config = { raw: before_value }
-      let after_config = { raw: after_value }
+      let before_config = { raw: before_value, }
+      let after_config = { raw: after_value, }
       let kind = if ConfigValueKind::from_json(before_value) ==
         ConfigValueKind::from_json(after_value) {
         Changed

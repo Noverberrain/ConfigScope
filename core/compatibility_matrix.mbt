@@ -17,7 +17,7 @@ pub fn ConfigCompatibilityBaseline::new(
   name : String,
   value : ConfigValue,
 ) -> ConfigCompatibilityBaseline {
-  { name, value }
+  { name, value, }
 }
 
 ///|

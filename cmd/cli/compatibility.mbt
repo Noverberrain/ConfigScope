@@ -46,7 +46,7 @@ fn parse_compatibility_options(
   format : CliOutputFormat,
 ) -> Result[CompatibilityOptions, String] {
   if index >= args.length() {
-    Ok({ policy, format })
+    Ok({ policy, format, })
   } else {
     match args.get(index) {
       Some("--fail-on") =>

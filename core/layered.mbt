@@ -19,13 +19,13 @@ pub extend LayeredConfig with Debug::{to_repr}
 /// The input array is copied, so later changes to the caller's array do not
 /// change the layer ordering stored by this value.
 pub fn LayeredConfig::new(layers : Array[ConfigLayer]) -> LayeredConfig {
-  { layers: layers.copy() }
+  { layers: layers.copy(), }
 }
 
 ///|
 /// Return an empty ordered configuration.
 pub fn LayeredConfig::empty() -> LayeredConfig {
-  { layers: [] }
+  { layers: [], }
 }
 
 ///|
@@ -59,7 +59,7 @@ pub fn LayeredConfig::merge_with_report(self : LayeredConfig) -> MergeResult? {
         result.conflicts.each(conflict => conflicts.push(conflict))
         index = index + 1
       }
-      Some({ value, conflicts })
+      Some({ value, conflicts, })
     }
   }
 }

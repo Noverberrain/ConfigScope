@@ -69,7 +69,7 @@ pub fn ConfigPath::to_string(self : ConfigPath) -> String {
 ///
 /// An empty segment array represents a conflict at the configuration root.
 fn config_path_from_segments(segments : Array[String]) -> ConfigPath {
-  { segments: segments.copy() }
+  { segments: segments.copy(), }
 }
 
 ///|

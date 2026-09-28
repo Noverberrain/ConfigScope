@@ -173,7 +173,7 @@ pub fn ConfigCompatibilityContract::from_value(
       }
     }
   }
-  { candidate_path, baseline_paths, policy, ignored_paths } |> Ok
+  { candidate_path, baseline_paths, policy, ignored_paths, } |> Ok
 }
 
 ///|

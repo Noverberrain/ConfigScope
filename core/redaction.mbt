@@ -27,12 +27,12 @@ fn redact_raw(
         next_segments.push(key)
         output[key] = redact_raw(child, next_segments, paths).raw
       })
-      { raw: Json::object(output) }
+      { raw: Json::object(output), }
     }
     Array(values) => {
       let output = values.map(child => redact_raw(child, segments, paths).raw)
-      { raw: Json::array(output) }
+      { raw: Json::array(output), }
     }
-    _ => { raw: value }
+    _ => { raw: value, }
   }
 }

@@ -48,7 +48,7 @@ fn parse_contract_init_arguments(
     if baseline_paths.length() == 0 {
       Err("contract-init requires at least one baseline file")
     } else {
-      Ok({ candidate_path, baseline_paths, policy, output_path, ignored_paths })
+      Ok({ candidate_path, baseline_paths, policy, output_path, ignored_paths, })
     }
   } else {
     match args.get(index) {

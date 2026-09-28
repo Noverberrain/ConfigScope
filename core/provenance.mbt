@@ -170,7 +170,7 @@ pub fn LayeredConfig::merge_with_provenance(
         }
         index = index + 1
       }
-      Some({ value, conflicts, sources: origins })
+      Some({ value, conflicts, sources: origins, })
     }
   }
 }

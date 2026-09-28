@@ -48,7 +48,7 @@ pub fn LayeredMergeResult::explain(
   let value = self.value.get(path)
   let source = self.source(path)
   match (value, source) {
-    (Some(value), Some(source)) => Some({ path, value, source })
+    (Some(value), Some(source)) => Some({ path, value, source, })
     _ => None
   }
 }

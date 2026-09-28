@@ -14,7 +14,7 @@ pub extend ConfigLayer with Debug::{to_repr}
 ///|
 /// Create a configuration layer with a source name and value.
 pub fn ConfigLayer::new(name : String, value : ConfigValue) -> ConfigLayer {
-  { name, value }
+  { name, value, }
 }
 
 ///|
