@@ -9,6 +9,7 @@ pub struct ConfigCompatibilityContract {
   baseline_paths : Array[String]
   policy : ConfigCompatibilityPolicy
   ignored_paths : Array[ConfigPath]
+  consumer_paths : Array[String]
 } derive(Eq, Debug)
 
 ///|
@@ -22,8 +23,8 @@ pub extend ConfigCompatibilityContract with Debug::{to_repr}
 ///
 /// The accepted shape contains string field `candidate`, a non-empty string
 /// array field `baselines`, and optional `fail_on` and `ignore_paths` fields.
-/// `fail_on` defaults to `breaking`. Unknown object fields are ignored so
-/// the manifest can grow without breaking older clients.
+/// Optional `consumers` references nonempty consumer-rule files. Unknown
+/// fields are rejected to prevent misspellings from silently disabling gates.
 pub fn ConfigCompatibilityContract::from_value(
   value : ConfigValue,
 ) -> Result[ConfigCompatibilityContract, String] {
@@ -173,7 +174,42 @@ pub fn ConfigCompatibilityContract::from_value(
       }
     }
   }
-  { candidate_path, baseline_paths, policy, ignored_paths, } |> Ok
+  let consumer_paths : Array[String] = []
+  match value.field("consumers") {
+    None => ()
+    Some(paths) => {
+      if paths.kind() != Array || paths.length().unwrap() == 0 {
+        return Err("contract field 'consumers' must be a non-empty array")
+      }
+      let seen_consumers : Map[String, Bool] = Map([])
+      for index in 0..<paths.length().unwrap() {
+        let path = match paths.element(index).unwrap().as_string() {
+          Some(path) if path != "" => path
+          _ => return Err("contract consumer path must be a non-empty string")
+        }
+        if seen_consumers.contains(path) {
+          return Err("duplicate contract consumer path '" + path + "'")
+        }
+        seen_consumers[path] = true
+        consumer_paths.push(path)
+      }
+    }
+  }
+  let fields = match value.raw {
+    Object(fields) => fields
+    _ => abort("unreachable")
+  }
+  for key in fields.keys() {
+    if key != "candidate" &&
+      key != "baselines" &&
+      key != "fail_on" &&
+      key != "ignore_paths" &&
+      key != "consumers" {
+      return Err("unknown contract field '" + key + "'")
+    }
+  }
+  { candidate_path, baseline_paths, policy, ignored_paths, consumer_paths, }
+  |> Ok
 }
 
 ///|
@@ -206,4 +242,12 @@ pub fn ConfigCompatibilityContract::ignored_paths(
   self : ConfigCompatibilityContract,
 ) -> Array[ConfigPath] {
   self.ignored_paths.copy()
+}
+
+///|
+/// Return consumer declarations in manifest order, relative to the manifest.
+pub fn ConfigCompatibilityContract::consumer_paths(
+  self : ConfigCompatibilityContract,
+) -> Array[String] {
+  self.consumer_paths.copy()
 }

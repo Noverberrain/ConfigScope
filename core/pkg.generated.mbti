@@ -76,9 +76,11 @@ pub struct ConfigCompatibilityContract {
   baseline_paths : Array[String]
   policy : ConfigCompatibilityPolicy
   ignored_paths : Array[ConfigPath]
+  consumer_paths : Array[String]
 } derive(Eq, @debug.Debug)
 pub fn ConfigCompatibilityContract::baseline_paths(Self) -> Array[String]
 pub fn ConfigCompatibilityContract::candidate_path(Self) -> String
+pub fn ConfigCompatibilityContract::consumer_paths(Self) -> Array[String]
 pub fn ConfigCompatibilityContract::equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityContract::from_value(ConfigValue) -> Result[Self, String]
 pub fn ConfigCompatibilityContract::ignored_paths(Self) -> Array[ConfigPath]

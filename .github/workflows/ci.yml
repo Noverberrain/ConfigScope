@@ -92,5 +92,8 @@ jobs:
       - name: Run cross-platform compatibility demo
         run: bash demo.sh
 
+      - name: Compare checker with independent sample consumer
+        run: python3 scripts/check_consumer_behavior.py
+
       - name: Verify published package in a fresh consumer project
         run: python3 scripts/check_published_package.py

@@ -17,6 +17,39 @@ test "compatibility contract parses paths and default gate" {
   assert_eq(contract.baseline_paths(), ["configs/v1.json", "configs/v1.5.json"])
   assert_eq(contract.policy(), BreakingOnly)
   assert_eq(contract.ignored_paths(), [])
+  assert_eq(contract.consumer_paths(), [])
+}
+
+///|
+test "release contract parses consumer declarations in order" {
+  let contract = @configscope.ConfigCompatibilityContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"candidate\":\"v2.json\",\"baselines\":[\"v1.json\"],\"consumers\":[\"consumer-v1.json\",\"consumer-v2.json\"]}",
+    ),
+  ).unwrap()
+  let paths = contract.consumer_paths()
+  assert_eq(paths, ["consumer-v1.json", "consumer-v2.json"])
+  paths.push("another.json")
+  assert_eq(contract.consumer_paths().length(), 2)
+}
+
+///|
+test "release contract rejects invalid consumer declarations and misspellings" {
+  for
+    field in [
+      "\"consumers\":[]", "\"consumers\":\"v1.json\"", "\"consumers\":[\"\"]", "\"consumers\":[1]",
+      "\"consumers\":[\"v1.json\",\"v1.json\"]", "\"consumer\":[\"v1.json\"]",
+    ] {
+    let source = "{\"candidate\":\"v2.json\",\"baselines\":[\"v1.json\"]," +
+      field +
+      "}"
+    assert_true(
+      @configscope.ConfigCompatibilityContract::from_value(
+        @configscope.ConfigValue::parse_json(source),
+      )
+      is Err(_),
+    )
+  }
 }
 
 ///|

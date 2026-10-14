@@ -1,0 +1,1 @@
+{"rules":[{"path":"server.port","required":true,"type":"number","allowed_values":[9090]}]}

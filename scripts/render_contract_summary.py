@@ -65,6 +65,19 @@ def render_summary(report: dict) -> str:
             )
     else:
         lines.append("None.")
+    consumers = report.get("consumers", [])
+    if consumers:
+        lines.extend([
+            "", "### Declared consumer constraints", "",
+            "| Consumer | Result | Violations |",
+            "| --- | --- | ---: |",
+        ])
+        for consumer in consumers:
+            status = "passed" if consumer["passed"] else "failed"
+            name = markdown_text(consumer["consumer"])
+            lines.append(f"| {name} | {status} | {consumer['violations']} |")
+            for issue in consumer["issues"]:
+                lines.append(f"- {name}: [{markdown_text(issue['kind'])}] at {markdown_text(issue['path'])}")
     return "\n".join(lines) + "\n"
 
 

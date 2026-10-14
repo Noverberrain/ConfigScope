@@ -127,6 +127,22 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
   }
   let policy = contract.policy()
   let ignored_paths = contract.ignored_paths()
+  // Consumer gates always inspect the original candidate, never filtered diffs.
+  let consumers = match
+    check_contract_consumers(
+      manifest_path,
+      contract.consumer_paths(),
+      candidate,
+    ) {
+    Ok(entries) => entries
+    Err(error) => return Err(error)
+  }
+  let consumers_passed = consumers.all(entry => entry.issues.length() == 0)
+  let consumer_text = consumers
+    .map(entry => {
+      "\nconsumer: " + entry.name + "\n" + render_consumer_issues(entry.issues)
+    })
+    .join("\n")
   let unfiltered_report = candidate.compatibility_matrix(baselines)
   let report = unfiltered_report.excluding_path_patterns(ignored_paths)
   let ignored_change_count = contract_change_count(unfiltered_report) -
@@ -149,14 +165,15 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
       candidate_path +
       "\n" +
       ignored_text +
-      render_compatibility_matrix(report, policy)
+      render_compatibility_matrix(report, policy) +
+      consumer_text
     Json =>
       render_json_compatibility_contract(
         manifest_path, candidate_path, ignored_paths, ignored_change_count, report,
-        policy,
+        policy, consumers,
       )
   }
-  if report.passes(policy) {
+  if report.passes(policy) && consumers_passed {
     match format {
       Text => Ok(output + "\ncompatibility contract passed")
       Json => Ok(output)
@@ -164,6 +181,12 @@ fn run_contract_check(args : Array[String]) -> Result[String, String] {
   } else {
     match format {
       Text => {
+        if !consumers_passed {
+          return Err(
+            output +
+            "\ncompatibility contract failed: declared consumer constraints were violated",
+          )
+        }
         let count = report.failed_count(policy)
         let noun = if count == 1 { "baseline" } else { "baselines" }
         let verb = if count == 1 { "exceeds" } else { "exceed" }

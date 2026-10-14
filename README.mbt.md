@@ -13,26 +13,43 @@ JSON types, allowed values, and consumer defaults. Try:
 ```sh
 moon run cmd/main -- consumer-check cmd/main/testdata/basic.json cmd/main/testdata/consumer.json
 moon run cmd/main -- consumer-check cmd/main/testdata/consumer-invalid.json cmd/main/testdata/consumer.json
+moon run cmd/main -- consumer-check cmd/main/testdata/consumer-invalid.json cmd/main/testdata/consumer.json --format json
 ```
 
 The second command fails on a disallowed value. A pass covers only declared
-constraints, not undeclared behavior or cross-field semantics. The original
-`compat` and `contract-check` commands remain structural-difference gates.
+constraints, not undeclared behavior or cross-field semantics. `compat` remains
+a structural gate. `contract-check` additionally validates all rule files in
+the optional `consumers` field; without it, only structural checks run.
 Defaults apply only when a path is absent, not when it is explicitly `null`.
 The consumer must implement its declared defaults; checking does not change
 the configuration or supply defaults to an application.
 
+### Executable consumer evidence
+
+`examples/service_consumer` directly reads JSON without importing ConfigScope.
+It accepts ports 8080/9090 and uses the declared default logging level `info`.
+
+```sh
+moon run examples/service_consumer -- cmd/main/testdata/basic.json
+python scripts/check_consumer_behavior.py
+```
+
+The script verifies agreement on ten fixed cases and checks the actual default
+behavior. This demonstrates this sample's constraints, not arbitrary consumer
+behavior. The published 0.3.0 package does not contain the new consumer APIs;
+these are currently available in the repository checkout.
+
 ## Current direction
 
-The project is being refocused from general configuration merging to one
-specific release-safety problem: can a new configuration version still be used
-by the existing application contract?
+The current workflow checks declared consumer expectations alongside structural
+differences between released snapshots. It does not infer application behavior
+from a difference category.
 
 The first compatibility milestone provides:
 
 1. deterministic recursive comparison of JSON-compatible configuration values;
 2. stable classification of added, changed, removed, and type-changed paths;
-3. a compatibility report with counts, paths, before/after values, and messages;
+3. a library difference report with counts, paths, before/after values, and messages;
 4. a public API and CLI release gate with configurable breaking, behavioral,
    or all-change thresholds.
 5. a compatibility matrix that checks one candidate against multiple historical
@@ -42,11 +59,11 @@ The first compatibility milestone provides:
 7. a `contract-init` command that generates a portable contract manifest from
    existing JSON snapshots.
 
-The existing path, value, merge, provenance, and audit code is retained as a
-reusable JSON foundation during the migration. The old merge, layer,
-provenance, explanation, and audit APIs are available under the explicit
-`Noverberrain/configscope/legacy` package for migration experiments. They are
-not re-exported by the root package or exposed by the main CLI.
+The existing JSON foundation is retained for source compatibility. Legacy layer,
+provenance, explanation, audit-rule and merge-result type aliases are exported
+through `Noverberrain/configscope/legacy`. The root `ConfigValue` still has
+historical merge/deep-merge/audit methods. These methods are retained APIs, not
+part of the main CLI's release-checking workflow.
 
 ## Scope boundary
 
@@ -170,8 +187,8 @@ summary: passed=1 failed=1 total=2
 compatibility matrix failed: 1 baseline exceeds the 'breaking' gate
 ```
 
-This is intended for projects that must keep a new configuration release
-compatible with more than one supported historical version.
+This reports structural differences against several historical snapshots.
+Testing expectations of supported consumers requires explicit consumer rules.
 
 ### Contract manifests
 
@@ -183,7 +200,8 @@ and the release gate in one reviewable file:
   "candidate": "configs/v2.json",
   "baselines": ["configs/v1.json", "configs/v1.5.json"],
   "fail_on": "breaking",
-  "ignore_paths": ["build.timestamp", "metadata.*"]
+  "ignore_paths": ["build.timestamp", "metadata.*"],
+  "consumers": ["consumers/service-v1.json", "consumers/service-v2.json"]
 }
 ```
 
@@ -192,6 +210,12 @@ relative to the manifest, while the report keeps the names written in the
 manifest. The `fail_on` field accepts `breaking`, `behavioral`, or `any`
 and defaults to `breaking`. This keeps release policy in version control
 without adding a configuration loader or a runtime merge mechanism.
+
+The optional `consumers` field is a nonempty array of unique rule-file paths,
+resolved relative to the manifest. All consumers and the structural gate must
+pass. Ignore rules never suppress consumer violations. Missing rule files,
+invalid declarations and unknown manifest fields fail the check. The manifest
+is tracked in version control; it has no schema-version negotiation.
 
 The optional `ignore_paths` array excludes known volatile fields from every
 baseline comparison. Entries are exact by default; a final `.*` excludes every
@@ -238,11 +262,12 @@ bash demo.sh
 
 It generates a temporary contract under `_build/demo`, checks a compatible
 release, prints a JSON report, and verifies that the breaking fixture is
-rejected with exit code `1`. The generated files are ignored build output and
+rejected with exit code `1`. It also runs the independent sample consumer and
+rejects a disallowed value through the combined consumer gate. Build outputs
 can be inspected while recording a short project demonstration.
 
-The sections below document the reusable JSON foundation retained under the
-legacy package during this transition. They are not the project's
+The sections below document the reusable JSON foundation and legacy facade.
+They are not the project's
 differentiating scope.
 
 ### Configuration paths
@@ -300,6 +325,8 @@ test {
 
 Lookup follows object fields only. Missing fields, non-object intermediate values,
 and array indexes return `None`.
+Difference comparison recurses through objects; arrays are compared as whole
+values, with no element-level or index-path rules.
 
 ### Shallow merge
 
@@ -585,8 +612,9 @@ canonical path, and human-readable message, and results are sorted by path.
 
 ### Legacy foundation
 
-The historical merge, layer, provenance, explanation, and audit APIs remain
-available under `Noverberrain/configscope/legacy` for migration experiments.
+The legacy facade exports layer, provenance, explanation, audit-rule and
+merge-result types. `ConfigValue` methods still belong to the shared JSON type
+and can be called through the root package.
 The main CLI intentionally exposes only compatibility workflow commands, so
 the project's public workflow stays focused on release-time compatibility
 checks.
@@ -600,7 +628,7 @@ The historical path API reads a parsed value and resolves a dot-separated path.
 The main CLI no longer exposes this command.
 ```
 
-Nested arrays and scalar values remain covered by the legacy value model; they
+Nested arrays and scalar values remain covered by the JSON value model; they
 are not commands exposed by the primary CLI. Missing paths and
 invalid command arguments are handled by the library rather than the primary CLI.
 
@@ -615,9 +643,9 @@ The legacy API reports whether its rules pass; the primary CLI does not expose i
 
 #### Historical merge API
 
-The historical merge API combines layers from first to last. It remains
-available only through the explicit legacy package; later layers override
-nested object fields.
+The historical layer API is exported through the legacy package; later layers
+override nested fields. The root `ConfigValue` still exposes merge methods for
+source compatibility.
 
 ```text
 `merge` is no longer exposed by the main CLI.
@@ -633,13 +661,16 @@ Artifact for 14 days, including when the contract gate fails.
 
 ### JSON reports
 
-Automation can request a structured report from any compatibility command:
+`compat`, `compat-matrix`, `contract-check`, and `consumer-check` accept
+`--format json`. `contract-init` generates a manifest without that option:
 
 ```text
 moon run cmd/main -- contract-check configscope.contract.json --format json
 ```
 
-The JSON result includes `kind`, `gate`, `passed`, a summary, and the ordered
-changes or baseline entries. A failed check still returns exit code `1` while
-writing the report to standard output, so scripts can parse the result without
-losing the release gate behavior.
+Structural reports contain `gate`, counts and ordered changes. Combined
+contract reports also contain ordered `consumers` with `passed`, `violations`
+and value-free `issues`. `summary` counts baselines, while top-level `passed`
+covers both gates. Standalone consumer reports use `kind: consumer_report`,
+`scope`, `passed` and `issues`. Computed violations return exit code `1` with
+JSON on standard output; argument, file and declaration errors remain text.

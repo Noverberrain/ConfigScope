@@ -38,8 +38,8 @@ function Invoke-MoonExpectedFailure {
 $previousLocation = Get-Location
 try {
   Set-Location -LiteralPath $repoRoot
-  if (Test-Path -LiteralPath $demoDirectory) {
-    Remove-Item -LiteralPath $demoDirectory -Recurse -Force
+  if (Test-Path -LiteralPath $demoContract) {
+    Remove-Item -LiteralPath $demoContract -Force
   }
   New-Item -ItemType Directory -Path $demoDirectory -Force | Out-Null
 
@@ -67,8 +67,22 @@ try {
     throw "Breaking example did not produce the expected failure report"
   }
 
+  Write-Host "`n=== 5. Check declared consumers and run the settings consumer ==="
+  Invoke-Moon -Arguments @("contract-check", "configscope.contract.json", "--format", "json")
+  & moon run examples/service_consumer -- cmd/main/testdata/compatibility-compatible.json
+  if ($LASTEXITCODE -ne 0) { throw "Sample consumer unexpectedly rejected the candidate" }
+
+  Write-Host "`n=== 6. Reject a value even when structural differences are ignored ==="
+  $consumerOutput = Invoke-MoonExpectedFailure `
+    -Arguments @("contract-check", "cmd/main/testdata/consumer-invalid.contract.json") `
+    -ExpectedExitCode 1
+  if ($consumerOutput -notmatch "disallowed_value") {
+    throw "Consumer gate did not explain the rejected value"
+  }
+
   Write-Host "`nDemo completed successfully."
   Write-Host "Generated contract: $demoContract"
 } finally {
   Set-Location -LiteralPath $previousLocation
 }
+exit 0

@@ -40,5 +40,21 @@ if [[ "$breaking_output" != *'result: failed'* ||
   exit 1
 fi
 
+printf '\n%s\n' '=== 5. Check declared consumers and run the settings consumer ==='
+moon run cmd/main -- contract-check configscope.contract.json --format json
+moon run examples/service_consumer -- cmd/main/testdata/compatibility-compatible.json
+
+printf '\n%s\n' '=== 6. Reject a value even when structural differences are ignored ==='
+if consumer_output="$(moon run cmd/main -- contract-check cmd/main/testdata/consumer-invalid.contract.json 2>&1)"; then
+  consumer_exit=0
+else
+  consumer_exit=$?
+fi
+printf '%s\n' "$consumer_output"
+if [[ "$consumer_exit" -ne 1 || "$consumer_output" != *'disallowed_value'* ]]; then
+  printf '%s\n' 'Expected consumer gate rejection with exit code 1.' >&2
+  exit 1
+fi
+
 printf '\n%s\n' 'Demo completed successfully.'
 printf 'Generated contract: %s\n' "$demo_contract"

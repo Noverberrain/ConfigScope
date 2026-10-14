@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Check declared consumer requirements, JSON types, allowed values and defaults.
+- Emit value-free text/JSON consumer reports and combine all manifest consumer
+  checks with the structural release gate. Ignore rules affect only differences.
+- Reject unknown manifest fields instead of silently ignoring misspelled gates.
+- Add an independent sample consumer and ten executable behavior comparisons.
+- Clarify retained root `ConfigValue` merge methods and whole-array comparison.
+
 ## 0.3.0 - 2026-09-25
 
 - Report the actual number of ignored changes across contract baselines in
@@ -17,8 +26,8 @@
 - Added exact-path and trailing `.*` subtree ignore rules.
 - Added text and machine-readable JSON reports that avoid exposing values by default.
 - Added Windows and Unix demonstration scripts plus published-package CI checks.
-- Moved the earlier merge, layering, provenance, and audit foundation behind the
-  explicit `Noverberrain/configscope/legacy` package.
+- Added a legacy facade for layering, provenance and audit rule/result types.
+  Root `ConfigValue` merge methods remain available for source compatibility.
 
 ## 0.1.0 - 2026-09-15
 

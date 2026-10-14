@@ -82,6 +82,28 @@ class ContractSummaryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             render_summary(data)
 
+    def test_consumer_failure_is_shown_when_structural_gate_passes(self) -> None:
+        data = report(passed=True)
+        data["passed"] = False
+        data["consumers"] = [{
+            "consumer": "consumer-v1.json", "passed": False, "violations": 1,
+            "issues": [{"kind": "disallowed_value", "path": "server.port"}],
+        }]
+        output = render_summary(data)
+        self.assertIn("**Result: FAILED**", output)
+        self.assertIn("| consumer-v1.json | failed | 1 |", output)
+        self.assertIn("[disallowed&#95;value] at server.port", output)
+
+    def test_consumer_names_and_paths_cannot_inject_markdown(self) -> None:
+        data = report(passed=False)
+        data["consumers"] = [{
+            "consumer": "v1|bad", "passed": False, "violations": 1,
+            "issues": [{"kind": "type_mismatch", "path": "secret\n#heading"}],
+        }]
+        output = render_summary(data)
+        self.assertIn("v1&#124;bad", output)
+        self.assertIn("secret&#10;&#35;heading", output)
+
 
 if __name__ == "__main__":
     unittest.main()

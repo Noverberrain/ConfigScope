@@ -113,30 +113,84 @@ fn render_json_compatibility_contract(
   ignored_change_count : Int,
   report : @configscope.ConfigCompatibilityMatrixReport,
   policy : @configscope.ConfigCompatibilityPolicy,
+  consumers : Array[ConsumerGateEntry],
 ) -> String {
+  let fields = Map([
+    ("kind", json_string("compatibility_contract")),
+    ("contract", json_string(manifest_path)),
+    ("candidate", json_string(candidate_path)),
+    (
+      "ignore_paths",
+      Json::array(ignored_paths.map(path => json_string(path.to_string()))),
+    ),
+    ("ignored_change_count", json_int(ignored_change_count)),
+    ("gate", json_string(policy.to_string())),
+    (
+      "passed",
+      Json::boolean(
+        report.passes(policy) &&
+        consumers.all(entry => entry.issues.length() == 0),
+      ),
+    ),
+    (
+      "summary",
+      Json::object(
+        Map([
+          ("passed", json_int(report.passed_count(policy))),
+          ("failed", json_int(report.failed_count(policy))),
+          ("total", json_int(report.baseline_count())),
+        ]),
+      ),
+    ),
+    ("baselines", json_matrix_entries(report, policy)),
+  ])
+  if consumers.length() > 0 {
+    fields["consumers"] = Json::array(
+      consumers.map(entry => json_consumer_result(entry.name, entry.issues)),
+    )
+  }
+  Json::object(fields).stringify()
+}
+
+///|
+fn json_consumer_result(
+  name : String,
+  issues : Array[@configscope.ConfigConsumerIssue],
+) -> Json {
   Json::object(
     Map([
-      ("kind", json_string("compatibility_contract")),
-      ("contract", json_string(manifest_path)),
-      ("candidate", json_string(candidate_path)),
+      ("consumer", json_string(name)),
+      ("passed", Json::boolean(issues.length() == 0)),
+      ("violations", json_int(issues.length())),
       (
-        "ignore_paths",
-        Json::array(ignored_paths.map(path => json_string(path.to_string()))),
-      ),
-      ("ignored_change_count", json_int(ignored_change_count)),
-      ("gate", json_string(policy.to_string())),
-      ("passed", Json::boolean(report.passes(policy))),
-      (
-        "summary",
-        Json::object(
-          Map([
-            ("passed", json_int(report.passed_count(policy))),
-            ("failed", json_int(report.failed_count(policy))),
-            ("total", json_int(report.baseline_count())),
-          ]),
+        "issues",
+        Json::array(
+          issues.map(issue => {
+            Json::object(
+              Map([
+                ("path", json_string(issue.path().to_string())),
+                ("kind", json_string(issue.kind().to_string())),
+              ]),
+            )
+          }),
         ),
       ),
-      ("baselines", json_matrix_entries(report, policy)),
     ]),
-  ).stringify()
+  )
+}
+
+///|
+fn render_json_consumer(
+  candidate : String,
+  name : String,
+  issues : Array[@configscope.ConfigConsumerIssue],
+) -> String {
+  let fields = match json_consumer_result(name, issues) {
+    Object(fields) => fields
+    _ => abort("unreachable")
+  }
+  fields["kind"] = json_string("consumer_report")
+  fields["candidate"] = json_string(candidate)
+  fields["scope"] = json_string("declared_constraints")
+  Json::object(fields).stringify()
 }
