@@ -1,8 +1,26 @@
 # ConfigScope
 
-ConfigScope is a MoonBit-native configuration contract compatibility checker.
-It compares two materialized JSON configuration snapshots and identifies which
-changes are compatible, behavioral, or breaking before a service is released.
+ConfigScope is a MoonBit-native configuration release checker. Snapshot
+differences are heuristic; they do not prove that an application can safely
+upgrade. The `consumer-check` command checks explicitly declared consumer
+constraints against a candidate JSON snapshot instead.
+
+### Consumer constraints
+
+The declaration at `cmd/main/testdata/consumer.json` specifies required paths,
+JSON types, allowed values, and consumer defaults. Try:
+
+```sh
+moon run cmd/main -- consumer-check cmd/main/testdata/basic.json cmd/main/testdata/consumer.json
+moon run cmd/main -- consumer-check cmd/main/testdata/consumer-invalid.json cmd/main/testdata/consumer.json
+```
+
+The second command fails on a disallowed value. A pass covers only declared
+constraints, not undeclared behavior or cross-field semantics. The original
+`compat` and `contract-check` commands remain structural-difference gates.
+Defaults apply only when a path is absent, not when it is explicitly `null`.
+The consumer must implement its declared defaults; checking does not change
+the configuration or supply defaults to an application.
 
 ## Current direction
 

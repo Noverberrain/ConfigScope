@@ -163,6 +163,46 @@ pub fn ConfigConflict::not_equal(Self, Self) -> Bool
 pub fn ConfigConflict::path(Self) -> ConfigPath
 pub fn ConfigConflict::to_repr(Self) -> @debug.Repr
 
+pub struct ConfigConsumerContract {
+  rules : Array[ConfigConsumerRule]
+} derive(Eq, @debug.Debug)
+pub fn ConfigConsumerContract::check(Self, ConfigValue) -> Array[ConfigConsumerIssue]
+pub fn ConfigConsumerContract::equal(Self, Self) -> Bool
+pub fn ConfigConsumerContract::from_value(ConfigValue) -> Result[Self, String]
+pub fn ConfigConsumerContract::not_equal(Self, Self) -> Bool
+pub fn ConfigConsumerContract::to_repr(Self) -> @debug.Repr
+
+pub struct ConfigConsumerIssue {
+  path : ConfigPath
+  kind : ConfigConsumerIssueKind
+} derive(Eq, @debug.Debug)
+pub fn ConfigConsumerIssue::equal(Self, Self) -> Bool
+pub fn ConfigConsumerIssue::kind(Self) -> ConfigConsumerIssueKind
+pub fn ConfigConsumerIssue::not_equal(Self, Self) -> Bool
+pub fn ConfigConsumerIssue::path(Self) -> ConfigPath
+pub fn ConfigConsumerIssue::to_repr(Self) -> @debug.Repr
+
+pub(all) enum ConfigConsumerIssueKind {
+  MissingRequired
+  TypeMismatch
+  DisallowedValue
+} derive(Eq, @debug.Debug)
+pub fn ConfigConsumerIssueKind::equal(Self, Self) -> Bool
+pub fn ConfigConsumerIssueKind::not_equal(Self, Self) -> Bool
+pub fn ConfigConsumerIssueKind::to_repr(Self) -> @debug.Repr
+pub fn ConfigConsumerIssueKind::to_string(Self) -> String
+
+pub struct ConfigConsumerRule {
+  path : ConfigPath
+  required : Bool
+  expected_kind : ConfigValueKind?
+  allowed_values : Array[ConfigValue]?
+  default_value : ConfigValue?
+} derive(Eq, @debug.Debug)
+pub fn ConfigConsumerRule::equal(Self, Self) -> Bool
+pub fn ConfigConsumerRule::not_equal(Self, Self) -> Bool
+pub fn ConfigConsumerRule::to_repr(Self) -> @debug.Repr
+
 pub struct ConfigDiff {
   path : ConfigPath
   kind : ConfigDiffKind

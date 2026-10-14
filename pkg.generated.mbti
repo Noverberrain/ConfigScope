@@ -29,6 +29,12 @@ pub using @core {type ConfigCompatibilityPolicy}
 
 pub using @core {type ConfigCompatibilityReport}
 
+pub using @core {type ConfigConsumerContract}
+
+pub using @core {type ConfigConsumerIssue}
+
+pub using @core {type ConfigConsumerIssueKind}
+
 pub using @core {type ConfigDiff}
 
 pub using @core {type ConfigDiffKind}

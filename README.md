@@ -1,8 +1,38 @@
 # ConfigScope
 
-ConfigScope is a MoonBit-native configuration contract compatibility checker.
-It compares two materialized JSON configuration snapshots and identifies which
-changes are compatible, behavioral, or breaking before a service is released.
+ConfigScope is a MoonBit-native configuration release checker. It reports
+structural changes between JSON snapshots and can separately check a candidate
+against explicit consumer constraints. Snapshot labels alone do not prove that
+an application can safely upgrade.
+
+### Consumer constraints (explicit, not inferred from a diff)
+
+Declare the expectations of one real consumer in a JSON file, for example
+`cmd/main/testdata/consumer.json`. A rule may require a path, constrain its
+JSON type and allowed values, or supply a consumer-side default when absent:
+
+```json
+{"rules":[{"path":"server.port","required":true,"type":"number","allowed_values":[8080,9090]},{"path":"logging.level","type":"string","allowed_values":["info","warn"],"default":"info"}]}
+```
+
+Defaults are checked against the rule when the declaration is parsed. They
+apply only to missing paths, never explicit `null` or an invalid value. With
+`required: true`, the value must exist after this declared default is considered.
+Checking does not modify the snapshot or install defaults in the application;
+the consumer must actually implement the fallback it declares.
+
+```sh
+moon run cmd/main -- consumer-check cmd/main/testdata/basic.json cmd/main/testdata/consumer.json
+moon run cmd/main -- consumer-check cmd/main/testdata/consumer-invalid.json cmd/main/testdata/consumer.json
+```
+
+The first command passes. The second fails because port 9999 is not accepted,
+even though changing 8080 to 9999 would pass the old structural `breaking`
+gate. Missing required paths and type mismatches also fail. Diagnostics do not
+print configuration values. A pass means only that the **declared** constraints
+hold; range rules, cross-field behavior and undeclared application semantics
+are not yet modeled. The existing `compat` and `contract-check` commands remain
+structural-difference gates, not consumer-safety proofs.
 
 ## Current direction
 

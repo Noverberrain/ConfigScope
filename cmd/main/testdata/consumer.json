@@ -1,0 +1,6 @@
+{
+  "rules": [
+    {"path": "server.port", "required": true, "type": "number", "allowed_values": [8080, 9090]},
+    {"path": "logging.level", "type": "string", "allowed_values": ["info", "warn"], "default": "info"}
+  ]
+}

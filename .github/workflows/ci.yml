@@ -80,6 +80,15 @@ jobs:
             exit 1
           fi
 
+      - name: Check declared consumer constraints
+        shell: bash
+        run: |
+          moon run cmd/main -- consumer-check cmd/main/testdata/basic.json cmd/main/testdata/consumer.json
+          if moon run cmd/main -- consumer-check cmd/main/testdata/consumer-invalid.json cmd/main/testdata/consumer.json; then
+            echo "Expected a disallowed consumer value to fail."
+            exit 1
+          fi
+
       - name: Run cross-platform compatibility demo
         run: bash demo.sh
 
