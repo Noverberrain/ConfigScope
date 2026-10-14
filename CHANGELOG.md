@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 - 2026-10-14
 
 - Check declared consumer requirements, JSON types, allowed values and defaults.
 - Emit value-free text/JSON consumer reports and combine all manifest consumer

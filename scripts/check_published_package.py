@@ -8,7 +8,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 SECTION = "### Use from another MoonBit project\n"
-EXPECTED_OUTPUT = "breaking changes: 1"
+EXPECTED_OUTPUT = "breaking changes: 1\nconsumer violations: 1"
 
 
 def example_from(readme: Path) -> tuple[str, str, str]:
@@ -32,7 +32,10 @@ def main() -> None:
         raise SystemExit("The published-package examples in the two READMEs differ")
 
     module, package, source = example
-    if module != "Noverberrain/configscope@0.3.0":
+    manifest = (ROOT / "moon.mod").read_text(encoding="utf-8")
+    name = re.search(r'^name\s*=\s*"([^"]+)"', manifest, re.MULTILINE).group(1)
+    version = re.search(r'^version\s*=\s*"([^"]+)"', manifest, re.MULTILINE).group(1)
+    if module != f"{name}@{version}":
         raise SystemExit(f"Unexpected published module: {module}")
 
     with tempfile.TemporaryDirectory(prefix="configscope-consumer-") as directory:

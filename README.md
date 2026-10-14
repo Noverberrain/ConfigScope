@@ -50,8 +50,8 @@ python scripts/check_consumer_behavior.py
 The script compares the actual consumer's exit status with the checker on ten
 fixed positive and negative cases, and checks that the consumer applies the
 declared default. This is evidence for this sample's declared behavior, not a
-proof about arbitrary applications. New consumer APIs are currently available
-in the repository checkout; the published 0.3.0 package does not contain them.
+proof about arbitrary applications. Consumer APIs are included in the 0.4.0
+library. Repository CLI commands run from this checkout.
 
 ## Current direction
 
@@ -88,11 +88,11 @@ ConfigScope focuses on compatibility between released configuration versions.
 
 ### Use from another MoonBit project
 
-The published library is `Noverberrain/configscope@0.3.0`. From the root of
+The published library is `Noverberrain/configscope@0.4.0`. From the root of
 your own MoonBit project, add it as a dependency:
 
 ```sh
-moon add Noverberrain/configscope@0.3.0
+moon add Noverberrain/configscope@0.4.0
 ```
 
 Import the root package in the consumer's `cmd/main/moon.pkg`:
@@ -118,13 +118,20 @@ fn main raise {
   )
   let report = baseline.compatibility_with(candidate)
   println("breaking changes: \{report.breaking_count()}")
+  let consumer = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"server.port\",\"required\":true,\"type\":\"number\",\"allowed_values\":[8080,9090]}]}",
+    ),
+  ).unwrap()
+  println("consumer violations: \{consumer.check(candidate).length()}")
 }
 ```
 
 Run `moon run cmd/main` from the consumer project. It prints
-`breaking changes: 1` because `server.port` changes from a number to a string.
-This example was checked in a separate project using the published Mooncakes
-package, rather than a local path dependency. The CLI commands described below
+`breaking changes: 1` and `consumer violations: 1`: `server.port` changes
+from a number to a string and violates the declared numeric consumer rule.
+The release verification script checks this example in a separate project
+using the published package, without a local path dependency. The CLI commands described below
 belong to the ConfigScope repository; installing the library does not install
 the CLI as a command in the consumer project.
 
