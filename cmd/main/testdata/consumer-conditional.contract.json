@@ -1,0 +1,1 @@
+{"candidate":"consumer-auth-missing.json","baselines":["consumer-auth-disabled.json"],"fail_on":"any","ignore_paths":["auth.*"],"consumers":["consumer.json"]}

@@ -2,6 +2,8 @@
   "rules": [
     {"path": "server.port", "required": true, "type": "number", "allowed_values": [8080, 9090]},
     {"path": "logging.level", "type": "string", "allowed_values": ["info", "warn"], "default": "info"},
-    {"path": "server.workers", "type": "number", "integer": true, "minimum": 1, "maximum": 64, "default": 4}
+    {"path": "server.workers", "type": "number", "integer": true, "minimum": 1, "maximum": 64, "default": 4},
+    {"path": "auth.enabled", "type": "boolean", "default": false},
+    {"path": "auth.token", "required": true, "type": "string", "when": {"path": "auth.enabled", "equals": true}}
   ]
 }

@@ -10,6 +10,7 @@ pub struct ConfigConsumerRule {
   minimum : Double?
   maximum : Double?
   integer : Bool
+  when : (ConfigPath, ConfigValue)?
 } derive(Eq, Debug)
 
 ///|
@@ -180,6 +181,10 @@ pub fn ConfigConsumerContract::from_value(
       }
     }
     let default_value = value.field("default")
+    let when = match parse_consumer_condition(value) {
+      Ok(condition) => condition
+      Err(error) => return Err(error)
+    }
     let minimum = match parse_consumer_bound(value, "minimum", path_text) {
       Ok(bound) => bound
       Err(error) => return Err(error)
@@ -238,7 +243,8 @@ pub fn ConfigConsumerContract::from_value(
         key != "default" &&
         key != "minimum" &&
         key != "maximum" &&
-        key != "integer" {
+        key != "integer" &&
+        key != "when" {
         return Err("unknown consumer rule field '" + key + "'")
       }
     }
@@ -251,6 +257,7 @@ pub fn ConfigConsumerContract::from_value(
       minimum,
       maximum,
       integer,
+      when,
     }
     match allowed_values {
       Some(values) =>
@@ -276,7 +283,10 @@ pub fn ConfigConsumerContract::from_value(
     }
     rules.push(rule)
   }
-  Ok({ rules, })
+  match validate_consumer_conditions(rules) {
+    Ok(_) => Ok({ rules, })
+    Err(error) => Err(error)
+  }
 }
 
 ///|
@@ -332,7 +342,11 @@ pub fn ConfigConsumerContract::check(
   candidate : ConfigValue,
 ) -> Array[ConfigConsumerIssue] {
   let issues : Array[ConfigConsumerIssue] = []
+  let inputs = consumer_unconditional_rules(self.rules)
   for rule in self.rules {
+    if !consumer_condition_matches(rule, candidate, inputs) {
+      continue
+    }
     if consumer_parent_is_invalid(candidate, rule.path) {
       issues.push({ path: rule.path, kind: TypeMismatch, })
       continue

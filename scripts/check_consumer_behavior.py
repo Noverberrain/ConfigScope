@@ -25,6 +25,14 @@ CASES = [
     ("workers_below", {"server": {"port": 8080, "workers": 0}}, False, None),
     ("workers_above", {"server": {"port": 8080, "workers": 65}}, False, None),
     ("workers_fraction", {"server": {"port": 8080, "workers": 4.5}}, False, None),
+    ("auth_disabled", {"server": {"port": 8080}, "auth": {"enabled": False}}, True, "info"),
+    ("auth_default", {"server": {"port": 8080}, "auth": {}}, True, "info"),
+    ("auth_valid", {"server": {"port": 8080}, "auth": {"enabled": True, "token": "fixture-only"}}, True, "info"),
+    ("auth_missing_token", {"server": {"port": 8080}, "auth": {"enabled": True}}, False, None),
+    ("auth_invalid_token", {"server": {"port": 8080}, "auth": {"enabled": True, "token": 7}}, False, None),
+    ("auth_invalid_flag", {"server": {"port": 8080}, "auth": {"enabled": "true"}}, False, None),
+    ("auth_invalid_parent", {"server": {"port": 8080}, "auth": 42}, False, None),
+    ("auth_inactive_token", {"server": {"port": 8080}, "auth": {"enabled": False, "token": 7}}, True, "info"),
 ]
 
 
@@ -52,6 +60,9 @@ def main() -> None:
                 workers = configuration["server"].get("workers", 4)
                 if settings.get("workers") != f"{workers:g}":
                     raise SystemExit(f"{name}: consumer did not apply the expected worker count")
+                enabled = configuration.get("auth", {}).get("enabled", False)
+                if settings.get("auth") != str(enabled).lower():
+                    raise SystemExit(f"{name}: consumer did not apply the expected auth flag")
             print(f"{name}: consumer={'accepted' if expected else 'rejected'}, checker agrees")
     print(f"Consumer behavior: {len(CASES)}/{len(CASES)} cases agreed.")
 

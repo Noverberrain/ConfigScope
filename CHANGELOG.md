@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add cross-field equality conditions with validated unconditional inputs and
+  input defaults. Inactive rules are skipped; invalid references/cycles fail.
+- Verify conditional requirements in JSON/combined gates and extend independent
+  behavior comparisons to twenty-four cases.
+
 - Add inclusive numeric bounds and integer-only consumer constraints.
 - Validate defaults and allowed values against numeric constraints; reject
   non-finite bounds, reversed bounds and empty integer intervals.

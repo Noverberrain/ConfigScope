@@ -31,7 +31,8 @@ The first command passes. The second fails because port 9999 is not accepted,
 even though changing 8080 to 9999 would pass the old structural `breaking`
 gate. Missing required paths and type mismatches also fail. Diagnostics do not
 print configuration values. A pass means only that the **declared** constraints
-hold; cross-field behavior and undeclared application semantics are not modeled.
+hold; cross-field support is limited to declared equality conditions.
+Undeclared application semantics are not modeled.
 `compat` remains a structural-difference gate.
 `contract-check` also checks consumer declarations when its manifest contains
 `consumers`; older manifests without that field remain structural-only checks.
@@ -56,11 +57,31 @@ in type, finite-number, integer, bounds, then allowed-value order.
 Numeric checks use the existing IEEE-754 Double representation, not arbitrary
 precision. This addition is not included in the published 0.4.0 package yet.
 
+### Conditional rules (unreleased)
+
+`when` activates the entire rule when another declared input equals a value:
+
+```json
+{"rules":[{"path":"auth.enabled","type":"boolean","default":false},{"path":"auth.token","required":true,"type":"string","when":{"path":"auth.enabled","equals":true}}]}
+```
+
+The input must have its own unconditional rule, which is always checked.
+The predicate uses that rule's default only when the input is missing; explicit
+`null` is never replaced. Equality does not coerce types. Without a value or
+default the condition is inactive, even if `equals` is `null`. When inactive,
+the entire target rule is skipped. When active, all its constraints apply.
+Condition values must satisfy their input rule. Undeclared inputs, cycles,
+conditional input rules and unknown operators fail declaration validation.
+This supports one equality condition per rule, not chained conditions or
+general expressions. The token example checks presence/type only; it does not
+validate credentials. These extensions are not yet published in 0.4.0.
+
 ### Executable consumer evidence
 
 `examples/service_consumer` is a small service-settings consumer that directly
 reads JSON, accepts ports 8080/9090, and uses `info` as the default logging level.
-It also reads an integer worker count in 1–64, defaulting to 4. It does not
+It also reads an integer worker count in 1–64 (default 4) and an auth flag
+(default false), requiring a string token only when enabled. It does not
 import ConfigScope or call its rule interpreter:
 
 ```sh
@@ -68,11 +89,11 @@ moon run examples/service_consumer -- cmd/main/testdata/basic.json
 python scripts/check_consumer_behavior.py
 ```
 
-The script compares the actual consumer's exit status with the checker on sixteen
+The script compares the actual consumer's exit status with the checker on twenty-four
 fixed positive and negative cases, and checks that the consumer applies the
 declared default. This is evidence for this sample's declared behavior, not a
 proof about arbitrary applications. Basic consumer APIs are included in the
-0.4.0 library; numeric extensions remain unreleased. CLI commands run from this checkout.
+0.4.0 library; numeric and conditional extensions remain unreleased. CLI commands run from this checkout.
 
 ## Current direction
 

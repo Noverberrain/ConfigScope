@@ -207,6 +207,7 @@ pub struct ConfigConsumerRule {
   minimum : Double?
   maximum : Double?
   integer : Bool
+  when : (ConfigPath, ConfigValue)?
 } derive(Eq, @debug.Debug)
 pub fn ConfigConsumerRule::equal(Self, Self) -> Bool
 pub fn ConfigConsumerRule::not_equal(Self, Self) -> Bool

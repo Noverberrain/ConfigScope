@@ -146,3 +146,36 @@ test "release gate checks numeric rules even when structural changes are ignored
     Some("above_maximum"),
   )
 }
+
+///|
+test "release gate evaluates conditions on the original candidate" {
+  let result = @cli.run([
+    "configscope", "contract-check", "cmd/main/testdata/consumer-conditional.contract.json",
+    "--format", "json",
+  ])
+  let output = match result {
+    Err(output) => output
+    Ok(_) => abort("conditional requirement must fail")
+  }
+  let report = @configscope.ConfigValue::parse_json(output)
+  assert_eq(report.field("passed").unwrap().as_boolean(), Some(false))
+  assert_eq(
+    report.field("ignored_change_count").unwrap().as_number(),
+    Some(1.0),
+  )
+  assert_eq(
+    report.field("summary").unwrap().field("failed").unwrap().as_number(),
+    Some(0.0),
+  )
+  let issue = report
+    .field("consumers")
+    .unwrap()
+    .element(0)
+    .unwrap()
+    .field("issues")
+    .unwrap()
+    .element(0)
+    .unwrap()
+  assert_eq(issue.field("path").unwrap().as_string(), Some("auth.token"))
+  assert_eq(issue.field("kind").unwrap().as_string(), Some("missing_required"))
+}

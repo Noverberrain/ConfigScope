@@ -41,20 +41,36 @@ numbers, integers, bounds, then allowed values. Numeric values use IEEE-754
 Double; arbitrary precision is not provided. These additions are available in
 the checkout but not in published 0.4.0 yet.
 
+### Conditional rules (unreleased)
+
+```json
+{"rules":[{"path":"auth.enabled","type":"boolean","default":false},{"path":"auth.token","required":true,"type":"string","when":{"path":"auth.enabled","equals":true}}]}
+```
+
+`when` activates the whole target rule on equality with an input governed by
+an unconditional rule. That input rule is always checked, and its default is
+used only when the input is missing. Explicit null is not replaced; an absent
+input without a default cannot match null. No type coercion is performed.
+Inactive target rules are skipped. Unknown operators, undeclared/conditional
+inputs, cycles and expected values violating the input rule fail parsing.
+Only one equality condition per rule is supported. The token rule checks
+presence/type, not credential validity. These extensions are unreleased.
+
 ### Executable consumer evidence
 
 `examples/service_consumer` directly reads JSON without importing ConfigScope.
 It accepts ports 8080/9090, defaults logging to `info`, and reads 1–64 integer
-workers with a default of 4.
+workers with a default of 4, and defaults auth to false. When auth is enabled,
+it independently requires a string token.
 
 ```sh
 moon run examples/service_consumer -- cmd/main/testdata/basic.json
 python scripts/check_consumer_behavior.py
 ```
 
-The script verifies agreement on sixteen fixed cases and checks the actual default
+The script verifies agreement on twenty-four fixed cases and checks the actual default
 behavior. This demonstrates this sample's constraints, not arbitrary consumer
-behavior. Basic consumer APIs are in the 0.4.0 library; numeric extensions are
+behavior. Basic consumer APIs are in the 0.4.0 library; numeric/conditional extensions are
 unreleased. CLI examples run from the repository checkout.
 
 ## Current direction

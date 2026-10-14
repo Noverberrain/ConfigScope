@@ -87,6 +87,23 @@ test "consumer-check reports numeric violations in JSON without values" {
 }
 
 ///|
+test "consumer-check reports activated cross-field requirements" {
+  let result = @cli.run([
+    "configscope", "consumer-check", "cmd/main/testdata/consumer-auth-missing.json",
+    "cmd/main/testdata/consumer.json", "--format", "json",
+  ])
+  let output = match result {
+    Err(output) => output
+    Ok(_) => abort("enabled auth without a token must fail")
+  }
+  let report = @configscope.ConfigValue::parse_json(output)
+  let issue = report.field("issues").unwrap().element(0).unwrap()
+  assert_eq(issue.field("path").unwrap().as_string(), Some("auth.token"))
+  assert_eq(issue.field("kind").unwrap().as_string(), Some("missing_required"))
+  assert_true(!output.contains("fixture-only"))
+}
+
+///|
 test "consumer-check rejects a disallowed value without printing it" {
   let result = @cli.run([
     "configscope", "consumer-check", "cmd/main/testdata/consumer-invalid.json", "cmd/main/testdata/consumer.json",

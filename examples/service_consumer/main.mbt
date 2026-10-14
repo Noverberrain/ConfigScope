@@ -3,6 +3,7 @@ priv struct ServiceSettings {
   port : Double
   logging_level : String
   workers : Double
+  auth_enabled : Bool
 }
 
 ///|
@@ -38,7 +39,26 @@ fn decode_settings(value : Json) -> Result[ServiceSettings, String] {
       workers.floor() == workers => workers
     _ => return Err("server.workers must be an integer from 1 to 64")
   }
-  Ok({ port, logging_level, workers, })
+  let auth_enabled = match root.get("auth") {
+    None => false
+    Some(Object(auth)) => {
+      let enabled = match auth.get("enabled") {
+        None | Some(False) => false
+        Some(True) => true
+        _ => return Err("auth.enabled must be boolean")
+      }
+      if enabled {
+        match auth.get("token") {
+          Some(String(_)) => ()
+          _ =>
+            return Err("auth.token must be present and a string when enabled")
+        }
+      }
+      enabled
+    }
+    _ => return Err("auth must be an object when present")
+  }
+  Ok({ port, logging_level, workers, auth_enabled, })
 }
 
 ///|
@@ -68,7 +88,7 @@ fn main {
   match load_settings(@env.args()) {
     Ok(settings) =>
       println(
-        "settings accepted: port=\{settings.port} log=\{settings.logging_level} workers=\{settings.workers}",
+        "settings accepted: port=\{settings.port} log=\{settings.logging_level} workers=\{settings.workers} auth=\{settings.auth_enabled}",
       )
     Err(error) => {
       println("consumer rejected: " + error)
