@@ -7,6 +7,9 @@ pub struct ConfigConsumerRule {
   expected_kind : ConfigValueKind?
   allowed_values : Array[ConfigValue]?
   default_value : ConfigValue?
+  minimum : Double?
+  maximum : Double?
+  integer : Bool
 } derive(Eq, Debug)
 
 ///|
@@ -31,6 +34,10 @@ pub(all) enum ConfigConsumerIssueKind {
   MissingRequired
   TypeMismatch
   DisallowedValue
+  BelowMinimum
+  AboveMaximum
+  NotInteger
+  NonFiniteNumber
 } derive(Eq, Debug)
 
 ///|
@@ -71,6 +78,10 @@ pub fn ConfigConsumerIssueKind::to_string(
     MissingRequired => "missing_required"
     TypeMismatch => "type_mismatch"
     DisallowedValue => "disallowed_value"
+    BelowMinimum => "below_minimum"
+    AboveMaximum => "above_maximum"
+    NotInteger => "not_integer"
+    NonFiniteNumber => "non_finite_number"
   }
 }
 
@@ -169,6 +180,49 @@ pub fn ConfigConsumerContract::from_value(
       }
     }
     let default_value = value.field("default")
+    let minimum = match parse_consumer_bound(value, "minimum", path_text) {
+      Ok(bound) => bound
+      Err(error) => return Err(error)
+    }
+    let maximum = match parse_consumer_bound(value, "maximum", path_text) {
+      Ok(bound) => bound
+      Err(error) => return Err(error)
+    }
+    let integer = match value.field("integer") {
+      None => false
+      Some(flag) =>
+        match flag.as_boolean() {
+          Some(flag) => flag
+          None => return Err("consumer rule 'integer' must be boolean")
+        }
+    }
+    if (
+        minimum is Some(_) ||
+        maximum is Some(_) ||
+        value.contains_field("integer")
+      ) &&
+      expected_kind != Some(Number) {
+      return Err(
+        "numeric consumer constraints require type 'number' at '" +
+        path_text +
+        "'",
+      )
+    }
+    match (minimum, maximum) {
+      (Some(lower), Some(upper)) => {
+        if lower > upper {
+          return Err("consumer minimum exceeds maximum at '" + path_text + "'")
+        }
+        if integer && lower.ceil() > upper.floor() {
+          return Err(
+            "consumer numeric interval contains no integer at '" +
+            path_text +
+            "'",
+          )
+        }
+      }
+      _ => ()
+    }
     if !required && expected_kind is None && allowed_values is None {
       return Err("consumer rule at '" + path_text + "' has no constraint")
     }
@@ -181,11 +235,36 @@ pub fn ConfigConsumerContract::from_value(
         key != "required" &&
         key != "type" &&
         key != "allowed_values" &&
-        key != "default" {
+        key != "default" &&
+        key != "minimum" &&
+        key != "maximum" &&
+        key != "integer" {
         return Err("unknown consumer rule field '" + key + "'")
       }
     }
-    let rule = { path, required, expected_kind, allowed_values, default_value, }
+    let rule = {
+      path,
+      required,
+      expected_kind,
+      allowed_values,
+      default_value,
+      minimum,
+      maximum,
+      integer,
+    }
+    match allowed_values {
+      Some(values) =>
+        for allowed in values {
+          if consumer_numeric_violation(rule, allowed) is Some(_) {
+            return Err(
+              "consumer allowed value violates numeric constraints at '" +
+              path_text +
+              "'",
+            )
+          }
+        }
+      None => ()
+    }
     match default_value {
       Some(default) =>
         if consumer_violation(rule, default) is Some(_) {
@@ -208,6 +287,10 @@ fn consumer_violation(
   match rule.expected_kind {
     Some(kind) if value.kind() != kind => return Some(TypeMismatch)
     _ => ()
+  }
+  match consumer_numeric_violation(rule, value) {
+    Some(issue) => return Some(issue)
+    None => ()
   }
   match rule.allowed_values {
     Some(values) => {

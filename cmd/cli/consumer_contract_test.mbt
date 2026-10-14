@@ -116,3 +116,33 @@ test "text release report explains consumer failure" {
   assert_true(output.contains("[disallowed_value] server.port"))
   assert_true(output.contains("declared consumer constraints were violated"))
 }
+
+///|
+test "release gate checks numeric rules even when structural changes are ignored" {
+  let result = @cli.run([
+    "configscope", "contract-check", "cmd/main/testdata/consumer-numeric.contract.json",
+    "--format", "json",
+  ])
+  let output = match result {
+    Err(output) => output
+    Ok(_) => abort("numeric gate must fail")
+  }
+  let report = @configscope.ConfigValue::parse_json(output)
+  assert_eq(report.field("passed").unwrap().as_boolean(), Some(false))
+  assert_eq(
+    report.field("summary").unwrap().field("failed").unwrap().as_number(),
+    Some(0.0),
+  )
+  let consumer = report.field("consumers").unwrap().element(0).unwrap()
+  assert_eq(
+    consumer
+    .field("issues")
+    .unwrap()
+    .element(0)
+    .unwrap()
+    .field("kind")
+    .unwrap()
+    .as_string(),
+    Some("above_maximum"),
+  )
+}

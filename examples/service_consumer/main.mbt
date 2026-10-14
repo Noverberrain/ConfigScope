@@ -2,6 +2,7 @@
 priv struct ServiceSettings {
   port : Double
   logging_level : String
+  workers : Double
 }
 
 ///|
@@ -30,7 +31,14 @@ fn decode_settings(value : Json) -> Result[ServiceSettings, String] {
       }
     _ => return Err("logging must be an object when present")
   }
-  Ok({ port, logging_level, })
+  let workers = match server.get("workers") {
+    None => 4.0
+    Some(Number(workers, ..)) if workers >= 1.0 &&
+      workers <= 64.0 &&
+      workers.floor() == workers => workers
+    _ => return Err("server.workers must be an integer from 1 to 64")
+  }
+  Ok({ port, logging_level, workers, })
 }
 
 ///|
@@ -60,7 +68,7 @@ fn main {
   match load_settings(@env.args()) {
     Ok(settings) =>
       println(
-        "settings accepted: port=\{settings.port} log=\{settings.logging_level}",
+        "settings accepted: port=\{settings.port} log=\{settings.logging_level} workers=\{settings.workers}",
       )
     Err(error) => {
       println("consumer rejected: " + error)

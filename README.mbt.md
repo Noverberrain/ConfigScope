@@ -24,20 +24,38 @@ Defaults apply only when a path is absent, not when it is explicitly `null`.
 The consumer must implement its declared defaults; checking does not change
 the configuration or supply defaults to an application.
 
+### Numeric constraints (unreleased)
+
+Inclusive `minimum`/`maximum` and `integer: true` require explicit
+`type: "number"`. `integer: false` imposes no integer restriction:
+
+```json
+{"rules":[{"path":"server.port","required":true,"type":"number","integer":true,"minimum":1,"maximum":65535}]}
+```
+
+Defaults and allowed values must also satisfy the numeric constraints. Invalid
+or non-finite bounds, reversed bounds and empty integer intervals fail parsing.
+The checker distinguishes `not_integer`, `below_minimum`, `above_maximum` and
+`non_finite_number`. It reports the first issue per path, checking type, finite
+numbers, integers, bounds, then allowed values. Numeric values use IEEE-754
+Double; arbitrary precision is not provided. These additions are available in
+the checkout but not in published 0.4.0 yet.
+
 ### Executable consumer evidence
 
 `examples/service_consumer` directly reads JSON without importing ConfigScope.
-It accepts ports 8080/9090 and uses the declared default logging level `info`.
+It accepts ports 8080/9090, defaults logging to `info`, and reads 1–64 integer
+workers with a default of 4.
 
 ```sh
 moon run examples/service_consumer -- cmd/main/testdata/basic.json
 python scripts/check_consumer_behavior.py
 ```
 
-The script verifies agreement on ten fixed cases and checks the actual default
+The script verifies agreement on sixteen fixed cases and checks the actual default
 behavior. This demonstrates this sample's constraints, not arbitrary consumer
-behavior. Consumer APIs are included in the 0.4.0 library. CLI examples run
-from the repository checkout.
+behavior. Basic consumer APIs are in the 0.4.0 library; numeric extensions are
+unreleased. CLI examples run from the repository checkout.
 
 ## Current direction
 

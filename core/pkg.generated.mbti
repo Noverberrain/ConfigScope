@@ -188,6 +188,10 @@ pub(all) enum ConfigConsumerIssueKind {
   MissingRequired
   TypeMismatch
   DisallowedValue
+  BelowMinimum
+  AboveMaximum
+  NotInteger
+  NonFiniteNumber
 } derive(Eq, @debug.Debug)
 pub fn ConfigConsumerIssueKind::equal(Self, Self) -> Bool
 pub fn ConfigConsumerIssueKind::not_equal(Self, Self) -> Bool
@@ -200,6 +204,9 @@ pub struct ConfigConsumerRule {
   expected_kind : ConfigValueKind?
   allowed_values : Array[ConfigValue]?
   default_value : ConfigValue?
+  minimum : Double?
+  maximum : Double?
+  integer : Bool
 } derive(Eq, @debug.Debug)
 pub fn ConfigConsumerRule::equal(Self, Self) -> Bool
 pub fn ConfigConsumerRule::not_equal(Self, Self) -> Bool

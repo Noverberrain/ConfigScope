@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Add inclusive numeric bounds and integer-only consumer constraints.
+- Validate defaults and allowed values against numeric constraints; reject
+  non-finite bounds, reversed bounds and empty integer intervals.
+- Verify numeric failures through standalone and combined JSON release reports.
+- Extend the independent sample consumer with worker-count bounds and defaults,
+  expanding executable behavior comparisons from ten to sixteen cases.
+
 ## 0.4.0 - 2026-10-14
 
 - Check declared consumer requirements, JSON types, allowed values and defaults.

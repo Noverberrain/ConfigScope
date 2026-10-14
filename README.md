@@ -31,27 +31,48 @@ The first command passes. The second fails because port 9999 is not accepted,
 even though changing 8080 to 9999 would pass the old structural `breaking`
 gate. Missing required paths and type mismatches also fail. Diagnostics do not
 print configuration values. A pass means only that the **declared** constraints
-hold; range rules, cross-field behavior and undeclared application semantics
-are not yet modeled. `compat` remains a structural-difference gate.
+hold; cross-field behavior and undeclared application semantics are not modeled.
+`compat` remains a structural-difference gate.
 `contract-check` also checks consumer declarations when its manifest contains
 `consumers`; older manifests without that field remain structural-only checks.
+
+### Numeric constraints (unreleased)
+
+The repository now supports inclusive `minimum`/`maximum` and `integer: true`.
+These fields require an explicit `type: "number"`; `integer: false` imposes no
+integer restriction. For example, a port can be constrained without listing
+every acceptable value:
+
+```json
+{"rules":[{"path":"server.port","required":true,"type":"number","integer":true,"minimum":1,"maximum":65535}]}
+```
+
+Endpoints are accepted. Fractions, values outside the bounds, and non-finite
+numbers fail with `not_integer`, `below_minimum`, `above_maximum`, or
+`non_finite_number`. Defaults and allowed values must also satisfy these
+constraints. Invalid bounds, reversed intervals and integer intervals with no
+integer are rejected when parsing the rule. Each path reports its first issue
+in type, finite-number, integer, bounds, then allowed-value order.
+Numeric checks use the existing IEEE-754 Double representation, not arbitrary
+precision. This addition is not included in the published 0.4.0 package yet.
 
 ### Executable consumer evidence
 
 `examples/service_consumer` is a small service-settings consumer that directly
 reads JSON, accepts ports 8080/9090, and uses `info` as the default logging level.
-It does not import ConfigScope or call its rule interpreter:
+It also reads an integer worker count in 1–64, defaulting to 4. It does not
+import ConfigScope or call its rule interpreter:
 
 ```sh
 moon run examples/service_consumer -- cmd/main/testdata/basic.json
 python scripts/check_consumer_behavior.py
 ```
 
-The script compares the actual consumer's exit status with the checker on ten
+The script compares the actual consumer's exit status with the checker on sixteen
 fixed positive and negative cases, and checks that the consumer applies the
 declared default. This is evidence for this sample's declared behavior, not a
-proof about arbitrary applications. Consumer APIs are included in the 0.4.0
-library. Repository CLI commands run from this checkout.
+proof about arbitrary applications. Basic consumer APIs are included in the
+0.4.0 library; numeric extensions remain unreleased. CLI commands run from this checkout.
 
 ## Current direction
 

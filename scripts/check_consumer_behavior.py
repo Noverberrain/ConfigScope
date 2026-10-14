@@ -19,6 +19,12 @@ CASES = [
     ("blocked_parent", {"server": {"port": 8080}, "logging": 42}, False, None),
     ("missing_server", {}, False, None),
     ("invalid_root", [], False, None),
+    ("workers_minimum", {"server": {"port": 8080, "workers": 1}}, True, "info"),
+    ("workers_maximum", {"server": {"port": 8080, "workers": 64}}, True, "info"),
+    ("workers_regular", {"server": {"port": 8080, "workers": 24}}, True, "info"),
+    ("workers_below", {"server": {"port": 8080, "workers": 0}}, False, None),
+    ("workers_above", {"server": {"port": 8080, "workers": 65}}, False, None),
+    ("workers_fraction", {"server": {"port": 8080, "workers": 4.5}}, False, None),
 ]
 
 
@@ -39,8 +45,13 @@ def main() -> None:
             report = json.loads(checker.stdout)
             if report["passed"] != expected:
                 raise SystemExit(f"{name}: report disagrees with consumer result")
-            if expected and f"log={level}" not in consumer.stdout:
-                raise SystemExit(f"{name}: consumer did not apply the expected logging value")
+            if expected:
+                settings = dict(token.split("=", 1) for token in consumer.stdout.split() if "=" in token)
+                if settings.get("log") != level:
+                    raise SystemExit(f"{name}: consumer did not apply the expected logging value")
+                workers = configuration["server"].get("workers", 4)
+                if settings.get("workers") != f"{workers:g}":
+                    raise SystemExit(f"{name}: consumer did not apply the expected worker count")
             print(f"{name}: consumer={'accepted' if expected else 'rejected'}, checker agrees")
     print(f"Consumer behavior: {len(CASES)}/{len(CASES)} cases agreed.")
 

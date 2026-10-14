@@ -58,6 +58,35 @@ test "consumer-check rejects unsupported formats" {
 }
 
 ///|
+test "consumer-check reports numeric violations in JSON without values" {
+  for
+    (file, kind) in [
+      ("consumer-workers-high.json", "above_maximum"),
+      ("consumer-workers-fraction.json", "not_integer"),
+    ] {
+    let result = @cli.run([
+      "configscope",
+      "consumer-check",
+      "cmd/main/testdata/" + file,
+      "cmd/main/testdata/consumer.json",
+      "--format",
+      "json",
+    ])
+    let output = match result {
+      Err(output) => output
+      Ok(_) => abort("numeric violation must fail")
+    }
+    let report = @configscope.ConfigValue::parse_json(output)
+    assert_eq(report.field("passed").unwrap().as_boolean(), Some(false))
+    let issue = report.field("issues").unwrap().element(0).unwrap()
+    assert_eq(issue.field("path").unwrap().as_string(), Some("server.workers"))
+    assert_eq(issue.field("kind").unwrap().as_string(), Some(kind))
+    assert_true(!issue.contains_field("value"))
+    assert_true(!issue.contains_field("maximum"))
+  }
+}
+
+///|
 test "consumer-check rejects a disallowed value without printing it" {
   let result = @cli.run([
     "configscope", "consumer-check", "cmd/main/testdata/consumer-invalid.json", "cmd/main/testdata/consumer.json",

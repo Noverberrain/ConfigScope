@@ -1,0 +1,1 @@
+{"candidate":"consumer-workers-high.json","baselines":["basic.json"],"ignore_paths":["features","server.*"],"consumers":["consumer.json"]}
