@@ -37,7 +37,7 @@ Undeclared application semantics are not modeled.
 `contract-check` also checks consumer declarations when its manifest contains
 `consumers`; older manifests without that field remain structural-only checks.
 
-### Numeric constraints (unreleased)
+### Numeric constraints
 
 The repository now supports inclusive `minimum`/`maximum` and `integer: true`.
 These fields require an explicit `type: "number"`; `integer: false` imposes no
@@ -55,9 +55,9 @@ constraints. Invalid bounds, reversed intervals and integer intervals with no
 integer are rejected when parsing the rule. Each path reports its first issue
 in type, finite-number, integer, bounds, then allowed-value order.
 Numeric checks use the existing IEEE-754 Double representation, not arbitrary
-precision. This addition is not included in the published 0.4.0 package yet.
+precision. Numeric constraints are included in the 0.5.0 library.
 
-### Conditional rules (unreleased)
+### Conditional rules
 
 `when` activates the entire rule when another declared input equals a value:
 
@@ -74,7 +74,7 @@ Condition values must satisfy their input rule. Undeclared inputs, cycles,
 conditional input rules and unknown operators fail declaration validation.
 This supports one equality condition per rule, not chained conditions or
 general expressions. The token example checks presence/type only; it does not
-validate credentials. These extensions are not yet published in 0.4.0.
+validate credentials. Conditional rules are included in the 0.5.0 library.
 
 ### Executable consumer evidence
 
@@ -92,8 +92,8 @@ python scripts/check_consumer_behavior.py
 The script compares the actual consumer's exit status with the checker on twenty-four
 fixed positive and negative cases, and checks that the consumer applies the
 declared default. This is evidence for this sample's declared behavior, not a
-proof about arbitrary applications. Basic consumer APIs are included in the
-0.4.0 library; numeric and conditional extensions remain unreleased. CLI commands run from this checkout.
+proof about arbitrary applications. Consumer APIs, including numeric and conditional
+rules, are included in the 0.5.0 library. CLI commands run from this checkout.
 
 ## Current direction
 
@@ -130,11 +130,11 @@ ConfigScope focuses on compatibility between released configuration versions.
 
 ### Use from another MoonBit project
 
-The published library is `Noverberrain/configscope@0.4.0`. From the root of
+The published library is `Noverberrain/configscope@0.5.0`. From the root of
 your own MoonBit project, add it as a dependency:
 
 ```sh
-moon add Noverberrain/configscope@0.4.0
+moon add Noverberrain/configscope@0.5.0
 ```
 
 Import the root package in the consumer's `cmd/main/moon.pkg`:
@@ -166,12 +166,36 @@ fn main raise {
     ),
   ).unwrap()
   println("consumer violations: \{consumer.check(candidate).length()}")
+  let advanced = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"workers\",\"type\":\"number\",\"integer\":true,\"minimum\":1,\"maximum\":64,\"default\":4},{\"path\":\"auth.enabled\",\"type\":\"boolean\",\"default\":false},{\"path\":\"auth.token\",\"required\":true,\"type\":\"string\",\"when\":{\"path\":\"auth.enabled\",\"equals\":true}}]}",
+    ),
+  ).unwrap()
+  let invalid = @configscope.ConfigValue::parse_json(
+    "{\"workers\":4.5,\"auth\":{\"enabled\":true}}",
+  )
+  let kinds = advanced
+    .check(invalid)
+    .map(issue => issue.kind().to_string())
+    .join(",")
+  println("new rule violations: \{kinds}")
+  let out_of_range = @configscope.ConfigValue::parse_json("{\"workers\":65}")
+  let range_kinds = advanced
+    .check(out_of_range)
+    .map(issue => issue.kind().to_string())
+    .join(",")
+  println("range violations: \{range_kinds}")
+  let empty = @configscope.ConfigValue::parse_json("{}")
+  println("defaulted violations: \{advanced.check(empty).length()}")
 }
 ```
 
 Run `moon run cmd/main` from the consumer project. It prints
 `breaking changes: 1` and `consumer violations: 1`: `server.port` changes
 from a number to a string and violates the declared numeric consumer rule.
+The additional checks print `new rule violations: missing_required,not_integer`,
+`range violations: above_maximum` and `defaulted violations: 0`, exercising
+conditional requirements, integer/bound checks and defaults in the installed library.
 The release verification script checks this example in a separate project
 using the published package, without a local path dependency. The CLI commands described below
 belong to the ConfigScope repository; installing the library does not install

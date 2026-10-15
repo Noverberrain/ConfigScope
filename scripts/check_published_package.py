@@ -8,7 +8,11 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 SECTION = "### Use from another MoonBit project\n"
-EXPECTED_OUTPUT = "breaking changes: 1\nconsumer violations: 1"
+EXPECTED_OUTPUT = (
+    "breaking changes: 1\nconsumer violations: 1\n"
+    "new rule violations: missing_required,not_integer\n"
+    "range violations: above_maximum\ndefaulted violations: 0"
+)
 
 
 def example_from(readme: Path) -> tuple[str, str, str]:
