@@ -108,20 +108,20 @@ pub fn ConfigCompatibilityMatrixEntry::not_equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityMatrixEntry::passes(Self, ConfigCompatibilityPolicy) -> Bool
 pub fn ConfigCompatibilityMatrixEntry::report(Self) -> ConfigCompatibilityReport
 pub fn ConfigCompatibilityMatrixEntry::to_repr(Self) -> @debug.Repr
-pub fn ConfigCompatibilityMatrixEntry::violation_count(Self, ConfigCompatibilityPolicy) -> Int
+pub fn ConfigCompatibilityMatrixEntry::violation_count(Self, ConfigCompatibilityPolicy) -> Int32
 
 pub struct ConfigCompatibilityMatrixReport {
   entries : Array[ConfigCompatibilityMatrixEntry]
 } derive(Eq, @debug.Debug)
-pub fn ConfigCompatibilityMatrixReport::baseline_count(Self) -> Int
+pub fn ConfigCompatibilityMatrixReport::baseline_count(Self) -> Int32
 pub fn ConfigCompatibilityMatrixReport::entries(Self) -> Array[ConfigCompatibilityMatrixEntry]
-pub fn ConfigCompatibilityMatrixReport::entry(Self, Int) -> ConfigCompatibilityMatrixEntry?
+pub fn ConfigCompatibilityMatrixReport::entry(Self, Int32) -> ConfigCompatibilityMatrixEntry?
 pub fn ConfigCompatibilityMatrixReport::equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityMatrixReport::excluding_path_patterns(Self, Array[ConfigPath]) -> Self
 pub fn ConfigCompatibilityMatrixReport::excluding_paths(Self, Array[ConfigPath]) -> Self
-pub fn ConfigCompatibilityMatrixReport::failed_count(Self, ConfigCompatibilityPolicy) -> Int
+pub fn ConfigCompatibilityMatrixReport::failed_count(Self, ConfigCompatibilityPolicy) -> Int32
 pub fn ConfigCompatibilityMatrixReport::not_equal(Self, Self) -> Bool
-pub fn ConfigCompatibilityMatrixReport::passed_count(Self, ConfigCompatibilityPolicy) -> Int
+pub fn ConfigCompatibilityMatrixReport::passed_count(Self, ConfigCompatibilityPolicy) -> Int32
 pub fn ConfigCompatibilityMatrixReport::passes(Self, ConfigCompatibilityPolicy) -> Bool
 pub fn ConfigCompatibilityMatrixReport::to_repr(Self) -> @debug.Repr
 
@@ -138,12 +138,12 @@ pub fn ConfigCompatibilityPolicy::to_string(Self) -> String
 pub struct ConfigCompatibilityReport {
   changes : Array[ConfigCompatibilityChange]
 } derive(Eq, @debug.Debug)
-pub fn ConfigCompatibilityReport::behavioral_count(Self) -> Int
-pub fn ConfigCompatibilityReport::breaking_count(Self) -> Int
-pub fn ConfigCompatibilityReport::change(Self, Int) -> ConfigCompatibilityChange?
-pub fn ConfigCompatibilityReport::change_count(Self) -> Int
+pub fn ConfigCompatibilityReport::behavioral_count(Self) -> Int32
+pub fn ConfigCompatibilityReport::breaking_count(Self) -> Int32
+pub fn ConfigCompatibilityReport::change(Self, Int32) -> ConfigCompatibilityChange?
+pub fn ConfigCompatibilityReport::change_count(Self) -> Int32
 pub fn ConfigCompatibilityReport::changes(Self) -> Array[ConfigCompatibilityChange]
-pub fn ConfigCompatibilityReport::compatible_count(Self) -> Int
+pub fn ConfigCompatibilityReport::compatible_count(Self) -> Int32
 pub fn ConfigCompatibilityReport::equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityReport::excluding_path_patterns(Self, Array[ConfigPath]) -> Self
 pub fn ConfigCompatibilityReport::excluding_paths(Self, Array[ConfigPath]) -> Self
@@ -151,7 +151,7 @@ pub fn ConfigCompatibilityReport::is_compatible(Self) -> Bool
 pub fn ConfigCompatibilityReport::not_equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityReport::passes(Self, ConfigCompatibilityPolicy) -> Bool
 pub fn ConfigCompatibilityReport::to_repr(Self) -> @debug.Repr
-pub fn ConfigCompatibilityReport::violation_count(Self, ConfigCompatibilityPolicy) -> Int
+pub fn ConfigCompatibilityReport::violation_count(Self, ConfigCompatibilityPolicy) -> Int32
 
 pub struct ConfigConflict {
   path : ConfigPath
@@ -266,15 +266,15 @@ pub struct ConfigPath {
   segments : Array[String]
 } derive(Eq, @debug.Debug)
 pub fn ConfigPath::equal(Self, Self) -> Bool
-pub fn ConfigPath::length(Self) -> Int
+pub fn ConfigPath::length(Self) -> Int32
 pub fn ConfigPath::not_equal(Self, Self) -> Bool
-pub fn ConfigPath::segment(Self, Int) -> String?
+pub fn ConfigPath::segment(Self, Int32) -> String?
 pub fn ConfigPath::to_repr(Self) -> @debug.Repr
 pub fn ConfigPath::to_string(Self) -> String
 
 pub(all) enum ConfigPathError {
   EmptyPath
-  EmptySegment(Int)
+  EmptySegment(Int32)
 } derive(Eq, @debug.Debug)
 pub fn ConfigPathError::equal(Self, Self) -> Bool
 pub fn ConfigPathError::not_equal(Self, Self) -> Bool
@@ -296,13 +296,13 @@ pub fn ConfigValue::contains_field(Self, String) -> Bool
 pub fn ConfigValue::deep_merge(Self, Self) -> Self
 pub fn ConfigValue::deep_merge_with_report(Self, Self) -> MergeResult
 pub fn ConfigValue::diff(Self, Self) -> Array[ConfigDiff]
-pub fn ConfigValue::element(Self, Int) -> Self?
+pub fn ConfigValue::element(Self, Int32) -> Self?
 pub fn ConfigValue::empty_object() -> Self
 pub fn ConfigValue::equal(Self, Self) -> Bool
 pub fn ConfigValue::field(Self, String) -> Self?
 pub fn ConfigValue::get(Self, ConfigPath) -> Self?
 pub fn ConfigValue::kind(Self) -> ConfigValueKind
-pub fn ConfigValue::length(Self) -> Int?
+pub fn ConfigValue::length(Self) -> Int32?
 pub fn ConfigValue::merge(Self, Self) -> Self
 pub fn ConfigValue::not_equal(Self, Self) -> Bool
 pub fn ConfigValue::null() -> Self
@@ -332,8 +332,8 @@ pub struct LayeredConfig {
 } derive(Eq, @debug.Debug)
 pub fn LayeredConfig::empty() -> Self
 pub fn LayeredConfig::equal(Self, Self) -> Bool
-pub fn LayeredConfig::layer(Self, Int) -> ConfigLayer?
-pub fn LayeredConfig::length(Self) -> Int
+pub fn LayeredConfig::layer(Self, Int32) -> ConfigLayer?
+pub fn LayeredConfig::length(Self) -> Int32
 pub fn LayeredConfig::merge(Self) -> ConfigValue?
 pub fn LayeredConfig::merge_with_provenance(Self) -> LayeredMergeResult?
 pub fn LayeredConfig::merge_with_report(Self) -> MergeResult?
@@ -346,13 +346,13 @@ pub struct LayeredMergeResult {
   conflicts : Array[ConfigConflict]
   sources : Map[String, String]
 } derive(Eq, @debug.Debug)
-pub fn LayeredMergeResult::conflict(Self, Int) -> ConfigConflict?
-pub fn LayeredMergeResult::conflict_count(Self) -> Int
+pub fn LayeredMergeResult::conflict(Self, Int32) -> ConfigConflict?
+pub fn LayeredMergeResult::conflict_count(Self) -> Int32
 pub fn LayeredMergeResult::equal(Self, Self) -> Bool
 pub fn LayeredMergeResult::explain(Self, ConfigPath) -> ConfigExplanation?
 pub fn LayeredMergeResult::not_equal(Self, Self) -> Bool
 pub fn LayeredMergeResult::source(Self, ConfigPath) -> String?
-pub fn LayeredMergeResult::source_count(Self) -> Int
+pub fn LayeredMergeResult::source_count(Self) -> Int32
 pub fn LayeredMergeResult::to_repr(Self) -> @debug.Repr
 pub fn LayeredMergeResult::value(Self) -> ConfigValue
 
@@ -360,8 +360,8 @@ pub struct MergeResult {
   value : ConfigValue
   conflicts : Array[ConfigConflict]
 } derive(Eq, @debug.Debug)
-pub fn MergeResult::conflict(Self, Int) -> ConfigConflict?
-pub fn MergeResult::conflict_count(Self) -> Int
+pub fn MergeResult::conflict(Self, Int32) -> ConfigConflict?
+pub fn MergeResult::conflict_count(Self) -> Int32
 pub fn MergeResult::equal(Self, Self) -> Bool
 pub fn MergeResult::not_equal(Self, Self) -> Bool
 pub fn MergeResult::to_repr(Self) -> @debug.Repr
