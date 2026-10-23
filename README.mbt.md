@@ -739,3 +739,12 @@ and value-free `issues`. `summary` counts baselines, while top-level `passed`
 covers both gates. Standalone consumer reports use `kind: consumer_report`,
 `scope`, `passed` and `issues`. Computed violations return exit code `1` with
 JSON on standard output; argument, file and declaration errors remain text.
+
+## Unreleased: consumer version regression analysis
+
+The checkout adds explicit consumer/version/contract/historical-snapshot bindings
+and introduced, persistent and resolved violation attribution. Candidate acceptance
+is strict across all supplied versions; existing violations are not grandfathered.
+This library-only API is not yet in Mooncakes 0.5.0 or the CLI. It does not
+compare effective values or analyze contract evolution yet. See
+[the executable case and boundaries](docs/consumer-release.md).

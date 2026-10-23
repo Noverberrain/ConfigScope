@@ -165,6 +165,15 @@ pub fn ConfigConflict::not_equal(Self, Self) -> Bool
 pub fn ConfigConflict::path(Self) -> ConfigPath
 pub fn ConfigConflict::to_repr(Self) -> @debug.Repr
 
+pub struct ConfigConsumerBinding {
+  consumer : String
+  version : String
+  baseline_id : String
+  contract : ConfigConsumerContract
+  baseline : ConfigValue
+}
+pub fn ConfigConsumerBinding::new(String, String, String, ConfigConsumerContract, ConfigValue) -> Result[Self, String]
+
 pub struct ConfigConsumerContract {
   rules : Array[ConfigConsumerRule]
 } derive(Eq, @debug.Debug)
@@ -197,6 +206,29 @@ pub fn ConfigConsumerIssueKind::equal(Self, Self) -> Bool
 pub fn ConfigConsumerIssueKind::not_equal(Self, Self) -> Bool
 pub fn ConfigConsumerIssueKind::to_repr(Self) -> @debug.Repr
 pub fn ConfigConsumerIssueKind::to_string(Self) -> String
+
+pub struct ConfigConsumerRegression {
+  consumer : String
+  version : String
+  baseline_id : String
+  introduced : Array[ConfigConsumerIssue]
+  persistent : Array[ConfigConsumerIssue]
+  resolved : Array[ConfigConsumerIssue]
+}
+pub fn ConfigConsumerRegression::baseline_id(Self) -> String
+pub fn ConfigConsumerRegression::consumer(Self) -> String
+pub fn ConfigConsumerRegression::introduced(Self) -> Array[ConfigConsumerIssue]
+pub fn ConfigConsumerRegression::passes(Self) -> Bool
+pub fn ConfigConsumerRegression::persistent(Self) -> Array[ConfigConsumerIssue]
+pub fn ConfigConsumerRegression::resolved(Self) -> Array[ConfigConsumerIssue]
+pub fn ConfigConsumerRegression::version(Self) -> String
+
+pub struct ConfigConsumerReleaseReport {
+  entries : Array[ConfigConsumerRegression]
+}
+pub fn ConfigConsumerReleaseReport::check(Array[ConfigConsumerBinding], ConfigValue) -> Result[Self, String]
+pub fn ConfigConsumerReleaseReport::entries(Self) -> Array[ConfigConsumerRegression]
+pub fn ConfigConsumerReleaseReport::passes(Self) -> Bool
 
 pub struct ConfigConsumerRule {
   path : ConfigPath

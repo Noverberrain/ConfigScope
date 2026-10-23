@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Bind consumer versions to contracts and historical snapshots in a library API.
+- Attribute introduced, persistent and resolved violations by path and kind.
+- Require candidate acceptance across all bindings, including pre-existing issues;
+  reject empty support sets and duplicate consumer/version identities.
+
 ## 0.5.0 - 2026-10-15
 
 - Add cross-field equality conditions with validated unconditional inputs and
