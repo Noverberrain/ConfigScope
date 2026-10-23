@@ -757,6 +757,9 @@ output. Argument, file and declaration errors remain ordinary text errors.
 The checkout adds explicit consumer/version/contract/historical-snapshot bindings
 and introduced, persistent and resolved violation attribution. Candidate acceptance
 is strict across all supplied versions; existing violations are not grandfathered.
-This library-only API is not yet in Mooncakes 0.5.0 or the CLI. It does not
-compare effective values or analyze contract evolution yet. See
+The library API also compares declared effective selections, including defaults
+and conditional activation, with a separate opt-in preservation check. Invalid
+snapshots are marked incomparable, not unchanged. Reports contain paths and
+sources, not configuration values. This is not yet in Mooncakes 0.5.0 or the CLI
+and does not compare old and new rule contracts. See
 [the executable case and boundaries](docs/consumer-release.md).

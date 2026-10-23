@@ -214,12 +214,17 @@ pub struct ConfigConsumerRegression {
   introduced : Array[ConfigConsumerIssue]
   persistent : Array[ConfigConsumerIssue]
   resolved : Array[ConfigConsumerIssue]
+  effective_comparable : Bool
+  effective_changes : Array[ConfigEffectiveChange]
 }
 pub fn ConfigConsumerRegression::baseline_id(Self) -> String
 pub fn ConfigConsumerRegression::consumer(Self) -> String
+pub fn ConfigConsumerRegression::effective_changes(Self) -> Array[ConfigEffectiveChange]
+pub fn ConfigConsumerRegression::effective_comparable(Self) -> Bool
 pub fn ConfigConsumerRegression::introduced(Self) -> Array[ConfigConsumerIssue]
 pub fn ConfigConsumerRegression::passes(Self) -> Bool
 pub fn ConfigConsumerRegression::persistent(Self) -> Array[ConfigConsumerIssue]
+pub fn ConfigConsumerRegression::preserves_effective_values(Self) -> Bool
 pub fn ConfigConsumerRegression::resolved(Self) -> Array[ConfigConsumerIssue]
 pub fn ConfigConsumerRegression::version(Self) -> String
 
@@ -229,6 +234,7 @@ pub struct ConfigConsumerReleaseReport {
 pub fn ConfigConsumerReleaseReport::check(Array[ConfigConsumerBinding], ConfigValue) -> Result[Self, String]
 pub fn ConfigConsumerReleaseReport::entries(Self) -> Array[ConfigConsumerRegression]
 pub fn ConfigConsumerReleaseReport::passes(Self) -> Bool
+pub fn ConfigConsumerReleaseReport::preserves_effective_values(Self) -> Bool
 
 pub struct ConfigConsumerRule {
   path : ConfigPath
@@ -269,6 +275,27 @@ pub fn ConfigDiffKind::equal(Self, Self) -> Bool
 pub fn ConfigDiffKind::not_equal(Self, Self) -> Bool
 pub fn ConfigDiffKind::to_repr(Self) -> @debug.Repr
 pub fn ConfigDiffKind::to_string(Self) -> String
+
+pub struct ConfigEffectiveChange {
+  path : ConfigPath
+  before : ConfigEffectiveSource
+  after : ConfigEffectiveSource
+  value_changed : Bool
+}
+pub fn ConfigEffectiveChange::after(Self) -> ConfigEffectiveSource
+pub fn ConfigEffectiveChange::before(Self) -> ConfigEffectiveSource
+pub fn ConfigEffectiveChange::path(Self) -> ConfigPath
+pub fn ConfigEffectiveChange::value_changed(Self) -> Bool
+
+pub(all) enum ConfigEffectiveSource {
+  Inactive
+  Missing
+  Explicit
+  Default
+} derive(Eq, @debug.Debug)
+pub fn ConfigEffectiveSource::equal(Self, Self) -> Bool
+pub fn ConfigEffectiveSource::not_equal(Self, Self) -> Bool
+pub fn ConfigEffectiveSource::to_repr(Self) -> @debug.Repr
 
 pub struct ConfigExplanation {
   path : ConfigPath

@@ -35,6 +35,8 @@ pub struct ConfigConsumerRegression {
   introduced : Array[ConfigConsumerIssue]
   persistent : Array[ConfigConsumerIssue]
   resolved : Array[ConfigConsumerIssue]
+  effective_comparable : Bool
+  effective_changes : Array[ConfigEffectiveChange]
 }
 
 ///|
@@ -77,6 +79,39 @@ pub fn ConfigConsumerRegression::resolved(
   self : ConfigConsumerRegression,
 ) -> Array[ConfigConsumerIssue] {
   self.resolved.copy()
+}
+
+///|
+/// False if either snapshot violates the contract: an empty change array then
+/// means unknown, NOT unchanged. Callers must check this before interpreting it.
+pub fn ConfigConsumerRegression::effective_comparable(
+  self : ConfigConsumerRegression,
+) -> Bool {
+  self.effective_comparable
+}
+
+///|
+pub fn ConfigConsumerRegression::effective_changes(
+  self : ConfigConsumerRegression,
+) -> Array[ConfigEffectiveChange] {
+  self.effective_changes.copy()
+}
+
+///|
+/// A separate, opt-in behavior-preservation gate. Candidate acceptance via
+/// passes() retains its original meaning. Unknown comparisons fail closed.
+pub fn ConfigConsumerRegression::preserves_effective_values(
+  self : ConfigConsumerRegression,
+) -> Bool {
+  self.effective_comparable &&
+  self.effective_changes.all(change => !change.value_changed)
+}
+
+///|
+pub fn ConfigConsumerReleaseReport::preserves_effective_values(
+  self : ConfigConsumerReleaseReport,
+) -> Bool {
+  self.entries.all(entry => entry.preserves_effective_values())
 }
 
 ///|
@@ -143,6 +178,12 @@ pub fn ConfigConsumerReleaseReport::check(
   let entries = ordered.map(binding => {
     let historical = binding.contract.check(binding.baseline)
     let proposed = binding.contract.check(candidate)
+    let effective_comparable = historical.is_empty() && proposed.is_empty()
+    let effective_changes = if effective_comparable {
+      consumer_effective_changes(binding.contract, binding.baseline, candidate)
+    } else {
+      []
+    }
     let introduced = proposed.filter(issue => !historical.contains(issue))
     let persistent = proposed.filter(issue => historical.contains(issue))
     let resolved = historical.filter(issue => !proposed.contains(issue))
@@ -153,6 +194,8 @@ pub fn ConfigConsumerReleaseReport::check(
       introduced,
       persistent,
       resolved,
+      effective_comparable,
+      effective_changes,
     }
   })
   Ok({ entries, })

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Compare per-version effective selections with default provenance and condition
+  activation; expose value-free changes and an opt-in preservation check.
+- Treat invalid snapshots as incomparable and fail the preservation check closed.
+
 - Bind consumer versions to contracts and historical snapshots in a library API.
 - Attribute introduced, persistent and resolved violations by path and kind.
 - Require candidate acceptance across all bindings, including pre-existing issues;

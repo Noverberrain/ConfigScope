@@ -45,6 +45,10 @@ pub using @core {type ConfigDiff}
 
 pub using @core {type ConfigDiffKind}
 
+pub using @core {type ConfigEffectiveChange}
+
+pub using @core {type ConfigEffectiveSource}
+
 pub using @core {type ConfigPath}
 
 pub using @core {type ConfigPathError}
