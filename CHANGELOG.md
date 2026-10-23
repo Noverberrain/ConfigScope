@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Analyze per-path required, finite-enumeration and numeric-bound evolution,
+  preserving Unknown for unsupported or interacting changes.
+- Link a numeric tightening example to version-bound candidate rejection.
+
 - Compare per-version effective selections with default provenance and condition
   activation; expose value-free changes and an opt-in preservation check.
 - Treat invalid snapshots as incomparable and fail the preservation check closed.

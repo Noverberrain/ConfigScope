@@ -12,6 +12,8 @@ pub using @core {
   type ConfigCompatibilityMatrixReport,
   type ConfigCompatibilityPolicy,
   type ConfigCompatibilityReport,
+  type ConfigContractEvolutionImpact,
+  type ConfigContractEvolutionChange,
   type ConfigEffectiveSource,
   type ConfigEffectiveChange,
   type ConfigConsumerBinding,

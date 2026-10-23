@@ -179,6 +179,7 @@ pub struct ConfigConsumerContract {
 } derive(Eq, @debug.Debug)
 pub fn ConfigConsumerContract::check(Self, ConfigValue) -> Array[ConfigConsumerIssue]
 pub fn ConfigConsumerContract::equal(Self, Self) -> Bool
+pub fn ConfigConsumerContract::evolution_to(Self, Self) -> Array[ConfigContractEvolutionChange]
 pub fn ConfigConsumerContract::from_value(ConfigValue) -> Result[Self, String]
 pub fn ConfigConsumerContract::not_equal(Self, Self) -> Bool
 pub fn ConfigConsumerContract::to_repr(Self) -> @debug.Repr
@@ -250,6 +251,26 @@ pub struct ConfigConsumerRule {
 pub fn ConfigConsumerRule::equal(Self, Self) -> Bool
 pub fn ConfigConsumerRule::not_equal(Self, Self) -> Bool
 pub fn ConfigConsumerRule::to_repr(Self) -> @debug.Repr
+
+pub struct ConfigContractEvolutionChange {
+  path : ConfigPath
+  impact : ConfigContractEvolutionImpact
+  reason : String
+}
+pub fn ConfigContractEvolutionChange::impact(Self) -> ConfigContractEvolutionImpact
+pub fn ConfigContractEvolutionChange::path(Self) -> ConfigPath
+pub fn ConfigContractEvolutionChange::reason(Self) -> String
+
+pub(all) enum ConfigContractEvolutionImpact {
+  Equivalent
+  Tightened
+  Relaxed
+  Incomparable
+  Unknown
+} derive(Eq, @debug.Debug)
+pub fn ConfigContractEvolutionImpact::equal(Self, Self) -> Bool
+pub fn ConfigContractEvolutionImpact::not_equal(Self, Self) -> Bool
+pub fn ConfigContractEvolutionImpact::to_repr(Self) -> @debug.Repr
 
 pub struct ConfigDiff {
   path : ConfigPath

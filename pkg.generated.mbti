@@ -41,6 +41,10 @@ pub using @core {type ConfigConsumerRegression}
 
 pub using @core {type ConfigConsumerReleaseReport}
 
+pub using @core {type ConfigContractEvolutionChange}
+
+pub using @core {type ConfigContractEvolutionImpact}
+
 pub using @core {type ConfigDiff}
 
 pub using @core {type ConfigDiffKind}
