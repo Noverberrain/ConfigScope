@@ -768,5 +768,6 @@ per-version blocker reasons. `release-check --format json` exposes a versioned,
 value-free report for both allowed and blocked decisions. Rule evolution is
 still library-only and includes conservative per-path diagnostics for required
 flags, finite enumerations and numeric bounds. Unsupported changes are Unknown;
-this does not prove whole-contract inclusion. See
+this does not prove whole-contract inclusion. CI now verifies five fixed release
+policy cases, including expected denials, and retains JSON evidence and a summary. See
 [the executable case and boundaries](docs/consumer-release.md).

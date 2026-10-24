@@ -42,7 +42,7 @@ jobs:
       - name: Run tests
         run: moon test --deny-warn
 
-      - name: Test contract summary renderer
+      - name: Test Python report and verification tools
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
       - name: Verify generated interfaces
@@ -69,6 +69,19 @@ jobs:
         with:
           name: configscope-contract-report
           path: ${{ runner.temp }}/configscope-contract.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Verify release-policy decisions and JSON reports
+        id: release_cases
+        run: python3 scripts/check_release_cases.py "$RUNNER_TEMP/configscope-release" --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Save release-policy evidence
+        if: ${{ always() && steps.release_cases.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: configscope-release-policy-reports
+          path: ${{ runner.temp }}/configscope-release/
           if-no-files-found: error
           retention-days: 14
 

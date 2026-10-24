@@ -226,4 +226,37 @@ moon run cmd/main -- release-check cmd/main/testdata/release/preserve.release.js
 
 JSON 使用标准序列化转义标签，字段顺序不是协议的一部分。结构化报告不输出
 配置值或规则中的枚举／默认值；用户提供的名称、路径和版本标签仍会显示，
-不应在这些元数据中填写密钥。本轮未改 CI，也未将规则演进自动纳入决策。
+不应在这些元数据中填写密钥。CI 案例接入见下一节；未将规则演进自动纳入决策。
+
+## 第七轮：CI 发布策略证据（仓库新增）
+
+工作流调用 `scripts/check_release_cases.py`，对固定的 5 个清单逐一执行
+`release-check --format json`。它检查精确退出码、报告类型／版本、策略、
+消费方及历史文件绑定、违规与可比较状态、汇总计数，以及预期的阻断原因。
+
+| 案例 | 预期退出码 | 关键含义 |
+|---|---:|---|
+| defaults | 0 | 默认模式允许合法候选，有效值变化仅提示 |
+| preserve | 1 | 严格模式因 v2 有效值变化而阻断 |
+| preserve-equal | 0 | 来源切换但值相等，严格模式允许 |
+| preserve-unknown | 1 | 历史非法、无法比较，严格模式阻断 |
+| rejected | 1 | 候选违反 v2 的上限约束 |
+
+预期阻断是成功测试，不会直接使 CI 变红。任何退出码或语义不匹配都会使
+校验脚本非零退出；崩溃、超时、普通文本错误和损坏的 JSON 不算验证通过。
+每个进程最长等待 120 秒；一个案例失败后继续收集其他案例证据。
+
+输出目录包含 5 份原始 JSON 和 `results.json` 汇总（若进程未产生输出，
+对应原始报告可能缺失，汇总明确标失败）。脚本拒绝复用已有输出目录，防止
+旧文件冒充本轮证据。GitHub Actions 将结果追加到运行摘要，并在校验步骤
+失败时仍尝试上传 `configscope-release-policy-reports`，保留 14 天。
+
+Windows 本地复现（输出到临时目录）：
+
+```powershell
+python scripts/check_release_cases.py "$env:TEMP/configscope-release-$(Get-Date -Format yyyyMMddHHmmss)"
+python -m unittest discover -s scripts -p 'test_*.py'
+```
+
+该脚本仅运行仓库固定样本，不检查任意用户项目，也不发布配置。
+工作流修改的公开执行结果须待推送后确认，本地通过不等于云端 CI 已通过。

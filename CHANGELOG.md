@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add CI verification of five fixed release-policy cases with semantic JSON
+  checks, expected-denial handling, report artifacts and a run summary.
+
 - Add schema-v1 release-check JSON reports with version bindings, regression
   categories, nullable effective-preservation results and shared blocker reasons.
 - Keep computed denials machine-readable with exit code 1; leave input errors
