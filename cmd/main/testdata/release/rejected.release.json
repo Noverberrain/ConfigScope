@@ -1,0 +1,19 @@
+{
+  "candidate": "candidate.json",
+  "bindings": [
+    {
+      "consumer": "service",
+      "version": "v2",
+      "baseline_id": "release-30",
+      "contract": "v2.json",
+      "baseline": "historical.json"
+    },
+    {
+      "consumer": "service",
+      "version": "v1",
+      "baseline_id": "release-30",
+      "contract": "v1.json",
+      "baseline": "historical.json"
+    }
+  ]
+}

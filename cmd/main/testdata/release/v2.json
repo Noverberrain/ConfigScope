@@ -1,0 +1,11 @@
+{
+  "rules": [
+    {
+      "path": "timeout",
+      "type": "number",
+      "minimum": 1,
+      "maximum": 40,
+      "default": 10
+    }
+  ]
+}

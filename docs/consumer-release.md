@@ -2,7 +2,7 @@
 
 本轮核心 API 为 `ConfigConsumerBinding::new` 和
 `ConfigConsumerReleaseReport::check`，均由根包导出。
-它们补充版本关联，不替代现有 `contract-check`；CLI 暂未接入。
+它们补充版本关联，不替代现有 `contract-check`；版本绑定 CLI 见文末。
 
 ## 输入与关系
 
@@ -70,7 +70,7 @@ v2 为 false，整体为 false。它不是现有 CLI 的默认发布策略。
   实际业务影响严重程度。条件始终复用既有默认值与单相等判断语义。
 - 对象用结构相等比较，数组比较整个值；不把未声明路径计为消费方读取。
 - 不可比较不等于不兼容已被证明；返回 false 表示无法确认保持不变。
-- 名称、版本与快照标签沿用第一轮绑定；尚未接入 CLI 或发布到 Mooncakes。
+- 名称、版本与快照标签沿用第一轮绑定；已有文末的 CLI 提示输出，但有效值保持尚非 CLI 门禁，且尚未发布到 Mooncakes。
 
 ## 第三轮：逐字段契约演进（尚未发布）
 
@@ -118,3 +118,43 @@ moon test consumer_evolution_test.mbt --deny-warn
 若干 Relaxed／Equivalent 条目直接推断全局兼容。没有自动发布决策 API，
 也没有隐式替换版本所绑定的规则或改动现有 CLI 门禁。报告提供规则演进证据，
 实际候选仍需针对所有支持版本执行检查；Unknown 不能用于自动放行。
+
+## 第四轮：版本绑定文件与 CLI（尚未发布）
+
+新增独立命令 `release-check <release.json>`，不改变 `contract-check`。
+清单示例（两个版本共享历史配置，但绑定不同规则）：
+
+```json
+{
+  "candidate": "empty.json",
+  "bindings": [
+    {"consumer":"service","version":"v1","baseline_id":"release-30","contract":"v1.json","baseline":"historical.json"},
+    {"consumer":"service","version":"v2","baseline_id":"release-30","contract":"v2.json","baseline":"historical.json"}
+  ]
+}
+```
+
+所有字段必填且非空白；bindings 至少一项，禁止重复 consumer/version。
+未知字段、错拼字段及多余选项均报错，不接受忽略规则或版本跳过开关。
+路径相对于清单所在目录解析，也允许绝对路径；这不是受限文件访问沙箱。
+baseline_id 为调用者标签，不证明文件内容身份或来源。
+
+仓库根目录运行：
+
+```sh
+moon run cmd/main -- release-check cmd/main/testdata/release/defaults.release.json
+moon run cmd/main -- release-check cmd/main/testdata/release/rejected.release.json
+```
+
+第一条退出码 0：两个版本都接受缺失字段，但报告分别展示 v1 的默认值接管
+不改变有效值、v2 的默认值接管改变有效值。第二条为预期失败，退出码 1：
+候选 timeout=45，v1 接受，v2 新增 above_maximum 违规。
+
+文本报告按消费方／版本排序，列出历史标签、规则和快照文件路径，以及新增、
+已有、已修复违规和不含配置值的有效值来源变化。所有用户标签和路径经 JSON
+字符串转义，避免换行伪造报告。非法快照的有效值分析明确标为不可比较。
+
+**本轮退出码只代表所有绑定版本对候选的约束接纳结果。** 有效值变化仍为提示，
+并非放行保证；规则演进仍为库 API，不自动从清单中推断新旧规则关系。
+仅支持文本，不支持 `--format`、有效值发布策略或修改旧的结构门禁。
+命令只读文件，不写快照、不发布配置。

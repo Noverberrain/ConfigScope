@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add read-only release-check with explicit version/contract/snapshot bindings,
+  manifest-relative paths, strict fields and value-free text attribution.
+- Gate candidate acceptance only; effective selection changes remain advisory.
+
 - Analyze per-path required, finite-enumeration and numeric-bound evolution,
   preserving Unknown for unsupported or interacting changes.
 - Link a numeric tightening example to version-bound candidate rejection.
