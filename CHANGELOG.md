@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add explicit accept/preserve-effective manifest policies with per-version
+  blocker codes shared by text reports and exit decisions; fail closed when
+  effective comparisons are unavailable under the strict policy.
+
 - Add read-only release-check with explicit version/contract/snapshot bindings,
   manifest-relative paths, strict fields and value-free text attribution.
 - Gate candidate acceptance only; effective selection changes remain advisory.

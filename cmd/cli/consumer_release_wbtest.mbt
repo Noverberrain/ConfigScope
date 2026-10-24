@@ -63,7 +63,13 @@ test "release rendering keeps persistent and resolved issues separate and escape
     [binding],
     @configscope.ConfigValue::parse_json("{\"port\":80}"),
   ).unwrap()
-  let output = render_consumer_release("manifest", "candidate", report, [])
+  let output = render_consumer_release(
+    "manifest",
+    "candidate",
+    report,
+    [],
+    Accept,
+  )
   assert_true(output.contains("persistent: missing_required \"token\""))
   assert_true(output.contains("resolved: missing_required \"port\""))
   assert_true(output.contains("service\\nforged"))

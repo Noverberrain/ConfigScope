@@ -750,7 +750,9 @@ and conditional activation, with a separate opt-in preservation check. Invalid
 snapshots are marked incomparable, not unchanged. Reports contain paths and
 sources, not configuration values. These additions are not in Mooncakes 0.5.0.
 The checkout now offers `release-check <release.json>` for manifest-bound
-candidate acceptance, with effective changes advisory only. Rule evolution is
+candidate acceptance by default. An optional manifest policy `preserve-effective`
+also blocks changed effective selections and incomparable snapshots, with explicit
+per-version blocker reasons. Rule evolution is
 still library-only and includes conservative per-path diagnostics for required
 flags, finite enumerations and numeric bounds. Unsupported changes are Unknown;
 this does not prove whole-contract inclusion. See

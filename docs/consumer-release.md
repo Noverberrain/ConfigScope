@@ -134,7 +134,8 @@ moon test consumer_evolution_test.mbt --deny-warn
 }
 ```
 
-所有字段必填且非空白；bindings 至少一项，禁止重复 consumer/version。
+candidate、bindings 及绑定内所有字段必填；字符串不得为空白。bindings 至少一项，禁止重复 consumer/version。
+可选 policy 的含义见下一节。
 未知字段、错拼字段及多余选项均报错，不接受忽略规则或版本跳过开关。
 路径相对于清单所在目录解析，也允许绝对路径；这不是受限文件访问沙箱。
 baseline_id 为调用者标签，不证明文件内容身份或来源。
@@ -154,7 +155,46 @@ moon run cmd/main -- release-check cmd/main/testdata/release/rejected.release.js
 已有、已修复违规和不含配置值的有效值来源变化。所有用户标签和路径经 JSON
 字符串转义，避免换行伪造报告。非法快照的有效值分析明确标为不可比较。
 
-**本轮退出码只代表所有绑定版本对候选的约束接纳结果。** 有效值变化仍为提示，
-并非放行保证；规则演进仍为库 API，不自动从清单中推断新旧规则关系。
-仅支持文本，不支持 `--format`、有效值发布策略或修改旧的结构门禁。
+**未填写 policy 时，退出码仍只代表候选对全部绑定规则的接纳结果。**
+有效值变化在默认模式下为提示，并非放行保证。严格策略见下一节。
+规则演进仍为库 API，不自动从清单中推断新旧规则关系。
+仅支持文本，不支持 `--format`，不修改旧的结构门禁。
 命令只读文件，不写快照、不发布配置。
+
+## 第五轮：显式发布策略与阻断原因（尚未发布）
+
+清单顶层可增加 `"policy": "preserve-effective"`；省略时为 `accept`。
+仅接受这两个精确字符串，null、拼写错误和未知策略都会失败。
+不支持 CLI 覆盖，也不提供按版本跳过或忽略路径的豁免。
+
+| 策略 | 允许条件 |
+|---|---|
+| accept（默认） | 候选满足全部绑定版本规则；历史已有违规仍不能在候选中残留 |
+| preserve-effective | 上述条件成立，且每个版本的历史／候选都合法可比较，声明有效值与选择状态均保持 |
+
+来源从 explicit 切为 default，但值相等时不阻断；条件启停、缺失／存在切换
+属于选择状态变化，会阻断严格模式。未声明字段不属于本策略保证范围。
+历史不合法而候选已修复时，accept 可以允许，但严格模式因无法比较而阻断。
+
+文本报告保留 `candidate acceptance`，另列 `policy`、逐版本 `release allowed`
+及总体 `release decision`，避免把“校验通过”误读为“策略允许发布”。
+阻断代码为：
+- `candidate_<issue_kind>`：候选仍违反规则，附路径；
+- `effective_value_changed`：声明有效值或选择状态改变，附路径；
+- `effective_incomparable`：历史或候选非法，无法进行有效值比较。
+
+阻断原因与退出决策复用同一计算函数，不包含配置值；前文的消费方版本、
+历史标签和规则／快照文件信息用于定位原因。
+
+```sh
+# 两个版本均接受候选，但 v2 有效值改变：预期退出码 1
+moon run cmd/main -- release-check cmd/main/testdata/release/preserve.release.json
+# 仅绑定 v1，来源改变但有效值相等：预期退出码 0
+moon run cmd/main -- release-check cmd/main/testdata/release/preserve-equal.release.json
+# 候选合法、历史非法，无法比较：预期退出码 1
+moon run cmd/main -- release-check cmd/main/testdata/release/preserve-unknown.release.json
+```
+
+`allowed` 仅表示所声明策略成立，不保证运行时或未声明业务关系安全。
+本轮不将规则演进诊断自动合并为发布策略；它的 Unknown 与这里的快照不可比较
+是不同概念，不能互相替代。机器可读 JSON 报告仍未接入。

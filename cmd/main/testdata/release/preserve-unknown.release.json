@@ -1,0 +1,13 @@
+{
+  "candidate": "empty.json",
+  "bindings": [
+    {
+      "consumer": "service",
+      "version": "v2",
+      "baseline_id": "invalid-history",
+      "contract": "v2.json",
+      "baseline": "candidate.json"
+    }
+  ],
+  "policy": "preserve-effective"
+}

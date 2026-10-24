@@ -8,9 +8,16 @@ priv struct ConsumerBindingFile {
 }
 
 ///|
+priv enum ConsumerReleasePolicy {
+  Accept
+  PreserveEffective
+}
+
+///|
 priv struct ConsumerReleaseManifest {
   candidate : String
   bindings : Array[ConsumerBindingFile]
+  policy : ConsumerReleasePolicy
 }
 
 ///|
@@ -35,8 +42,23 @@ fn release_manifest_text(
 fn parse_consumer_release_manifest(
   value : @configscope.ConfigValue,
 ) -> Result[ConsumerReleaseManifest, String] {
-  if value.kind() != Object || value.length() != Some(2) {
-    return Err("release manifest requires exactly candidate and bindings")
+  if value.kind() != Object {
+    return Err("release manifest must be an object")
+  }
+  let expected_fields = if value.contains_field("policy") { 3 } else { 2 }
+  if value.length() != Some(expected_fields) {
+    return Err(
+      "release manifest requires candidate, bindings and optional policy only",
+    )
+  }
+  let policy = match value.field("policy") {
+    None => Accept
+    Some(field) =>
+      match field.as_string() {
+        Some("accept") => Accept
+        Some("preserve-effective") => PreserveEffective
+        _ => return Err("release policy must be accept or preserve-effective")
+      }
   }
   let candidate = match release_manifest_text(value, "candidate") {
     Ok(text) => text
@@ -81,7 +103,7 @@ fn parse_consumer_release_manifest(
     }
     bindings.push({ consumer, version, baseline_id, contract, baseline, })
   }
-  Ok({ candidate, bindings, })
+  Ok({ candidate, bindings, policy, })
 }
 
 ///|
@@ -107,10 +129,12 @@ fn render_consumer_release(
   candidate : String,
   report : @configscope.ConfigConsumerReleaseReport,
   files : Array[ConsumerBindingFile],
+  policy : ConsumerReleasePolicy,
 ) -> String {
   let lines = [
     "release manifest: " + release_label(manifest),
     "candidate: " + release_label(candidate),
+    "policy: " + release_policy_label(policy),
   ]
   for entry in report.entries() {
     lines.push(
@@ -171,21 +195,43 @@ fn render_consumer_release(
     } else {
       lines.push("  effective values: incomparable (invalid snapshot)")
     }
+    let blockers = release_entry_blockers(entry, policy)
+    for (reason, path) in blockers {
+      let suffix = match path {
+        Some(path) => " " + release_label(path.to_string())
+        None => ""
+      }
+      lines.push("  blocked: " + reason + suffix)
+    }
+    lines.push("  release allowed: " + blockers.is_empty().to_string())
   }
   lines.push(
     "candidate acceptance: " +
     (if report.passes() { "passed" } else { "failed" }),
   )
   lines.push(
-    "scope: candidate constraints only; effective changes are advisory",
+    "release decision: " +
+    (if consumer_release_allowed(report, policy) {
+      "allowed"
+    } else {
+      "blocked"
+    }),
+  )
+  lines.push(
+    match policy {
+      Accept =>
+        "scope: candidate constraints only; effective changes are advisory"
+      PreserveEffective =>
+        "scope: candidate constraints and declared effective selections only; incomparable blocks release"
+    },
   )
   lines.join("\n")
 }
 
 ///|
 /// All file references are relative to this manifest, never the process CWD.
-/// This first CLI stage gates candidate acceptance only, not effective changes
-/// or rule evolution. It performs no writes and does not publish anything.
+/// The explicit manifest policy governs the decision; no CLI override can
+/// silently weaken it. Rule evolution is not inferred. This command is read-only.
 fn run_consumer_release(args : Array[String]) -> Result[String, String] {
   let manifest = args[2]
   let source = match read_config(manifest) {
@@ -241,8 +287,9 @@ fn run_consumer_release(args : Array[String]) -> Result[String, String] {
     plan.candidate,
     report,
     plan.bindings,
+    plan.policy,
   )
-  if report.passes() {
+  if consumer_release_allowed(report, plan.policy) {
     Ok(output)
   } else {
     Err(output)
