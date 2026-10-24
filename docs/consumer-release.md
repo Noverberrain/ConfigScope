@@ -121,7 +121,7 @@ moon test consumer_evolution_test.mbt --deny-warn
 
 ## 第四轮：版本绑定文件与 CLI（尚未发布）
 
-新增独立命令 `release-check <release.json>`，不改变 `contract-check`。
+新增独立命令 `release-check <release.json> [--format text|json]`，不改变 `contract-check`。
 清单示例（两个版本共享历史配置，但绑定不同规则）：
 
 ```json
@@ -158,7 +158,7 @@ moon run cmd/main -- release-check cmd/main/testdata/release/rejected.release.js
 **未填写 policy 时，退出码仍只代表候选对全部绑定规则的接纳结果。**
 有效值变化在默认模式下为提示，并非放行保证。严格策略见下一节。
 规则演进仍为库 API，不自动从清单中推断新旧规则关系。
-仅支持文本，不支持 `--format`，不修改旧的结构门禁。
+默认文本；可通过 `--format json` 输出结构化报告，不修改旧的结构门禁。
 命令只读文件，不写快照、不发布配置。
 
 ## 第五轮：显式发布策略与阻断原因（尚未发布）
@@ -197,4 +197,33 @@ moon run cmd/main -- release-check cmd/main/testdata/release/preserve-unknown.re
 
 `allowed` 仅表示所声明策略成立，不保证运行时或未声明业务关系安全。
 本轮不将规则演进诊断自动合并为发布策略；它的 Unknown 与这里的快照不可比较
-是不同概念，不能互相替代。机器可读 JSON 报告仍未接入。
+是不同概念，不能互相替代。JSON 报告格式见下一节。
+
+## 第六轮：JSON 发布报告（尚未发布）
+
+```sh
+moon run cmd/main -- release-check cmd/main/testdata/release/preserve.release.json --format json
+```
+
+上例为预期阻断：退出码 1，标准输出仍是一份完整 JSON，没有 `error:` 前缀。
+允许决策退出码 0。参数、文件、JSON 解析或清单错误不伪装成完成的发布报告，
+仍返回普通文本错误、退出码 1。默认及 `--format text` 保持文本行为。
+
+报告 `kind` 为 `consumer_release_report`，`schema_version` 为 1：
+- `scope` 固定为 `declared_consumer_versions`；`manifest`、`candidate` 为文件引用。
+- `policy` 为清单策略；`candidate_accepted` 仅反映全部版本的候选校验。
+- `passed` 为策略是否允许，`decision` 为 `allowed` 或 `blocked`，与退出码一致。
+- `summary` 的 `allowed`、`blocked`、`total` 统计绑定版本，不是违规或基线数量。
+- `consumers` 按名称／版本排序，包含 `consumer`、`version`、`baseline_id`、
+  `contract` 与 `baseline` 文件引用，以及逐版本 `candidate_accepted`、`release_allowed`。
+- 每个版本有 `introduced`、`persistent`、`resolved` 数组，条目为 `{path, kind}`。
+- `effective_comparable` 为 false 时，`effective_values_preserved` 为 null，
+  `effective_changes` 为空；空数组不证明没有变化。可比较时前者为布尔值。
+- 有效值变化条目只有 `path`、来源 `before`／`after` 和 `value_changed`，
+  不包含选中值。来源为 inactive、missing、explicit、default。
+- `blockers` 为 `{reason, path}` 数组，复用文本报告及退出决策的计算函数；
+  无法比较的阻断没有具体路径，`path` 为 null。
+
+JSON 使用标准序列化转义标签，字段顺序不是协议的一部分。结构化报告不输出
+配置值或规则中的枚举／默认值；用户提供的名称、路径和版本标签仍会显示，
+不应在这些元数据中填写密钥。本轮未改 CI，也未将规则演进自动纳入决策。

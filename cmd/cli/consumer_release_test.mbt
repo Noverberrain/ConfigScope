@@ -69,7 +69,7 @@ test "release-check rejects unsupported options and wrong argument counts" {
   for
     args in [
       ["configscope", "release-check"],
-      ["configscope", "release-check", "file.json", "--format", "json"],
+      ["configscope", "release-check", "file.json", "--format", "json", "extra"],
       ["configscope", "release-check", "file.json", "--ignore", "timeout"],
     ] {
     assert_eq(@cli.run(args), Err(@cli.usage()))

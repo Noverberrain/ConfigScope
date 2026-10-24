@@ -233,6 +233,14 @@ fn render_consumer_release(
 /// The explicit manifest policy governs the decision; no CLI override can
 /// silently weaken it. Rule evolution is not inferred. This command is read-only.
 fn run_consumer_release(args : Array[String]) -> Result[String, String] {
+  let format = if args.length() == 3 {
+    Text
+  } else {
+    match parse_output_format(args[4]) {
+      Ok(format) => format
+      Err(error) => return Err(error)
+    }
+  }
   let manifest = args[2]
   let source = match read_config(manifest) {
     Ok(v) => v
@@ -282,13 +290,24 @@ fn run_consumer_release(args : Array[String]) -> Result[String, String] {
     Ok(v) => v
     Err(e) => return Err(e)
   }
-  let output = render_consumer_release(
-    manifest,
-    plan.candidate,
-    report,
-    plan.bindings,
-    plan.policy,
-  )
+  let output = match format {
+    Text =>
+      render_consumer_release(
+        manifest,
+        plan.candidate,
+        report,
+        plan.bindings,
+        plan.policy,
+      )
+    Json =>
+      render_json_consumer_release(
+        manifest,
+        plan.candidate,
+        report,
+        plan.bindings,
+        plan.policy,
+      )
+  }
   if consumer_release_allowed(report, plan.policy) {
     Ok(output)
   } else {
