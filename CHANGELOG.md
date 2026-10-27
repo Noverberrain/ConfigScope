@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Expose per-path consumer rule evolution through contract-evolve with text and
+  schema-v1 JSON diagnostics; successful analysis is not a release-gate result.
+
 - Add CI verification of five fixed release-policy cases with semantic JSON
   checks, expected-denial handling, report artifacts and a run summary.
 

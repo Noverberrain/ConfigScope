@@ -765,8 +765,9 @@ The checkout now offers `release-check <release.json>` for manifest-bound
 candidate acceptance by default. An optional manifest policy `preserve-effective`
 also blocks changed effective selections and incomparable snapshots, with explicit
 per-version blocker reasons. `release-check --format json` exposes a versioned,
-value-free report for both allowed and blocked decisions. Rule evolution is
-still library-only and includes conservative per-path diagnostics for required
+value-free report for both allowed and blocked decisions. The independent
+`contract-evolve <before-rules.json> <after-rules.json> [--format text|json]`
+command provides conservative per-path diagnostics for required
 flags, finite enumerations and numeric bounds. Unsupported changes are Unknown;
 this does not prove whole-contract inclusion. CI now verifies five fixed release
 policy cases, including expected denials, and retains JSON evidence and a summary. See

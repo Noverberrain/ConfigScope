@@ -70,7 +70,7 @@ v2 为 false，整体为 false。它不是现有 CLI 的默认发布策略。
   实际业务影响严重程度。条件始终复用既有默认值与单相等判断语义。
 - 对象用结构相等比较，数组比较整个值；不把未声明路径计为消费方读取。
 - 不可比较不等于不兼容已被证明；返回 false 表示无法确认保持不变。
-- 名称、版本与快照标签沿用第一轮绑定；已有文末的 CLI 提示输出，但有效值保持尚非 CLI 门禁，且尚未发布到 Mooncakes。
+- 名称、版本与快照标签沿用第一轮绑定；已有文末的 CLI 输出，可通过 preserve-effective 策略检查有效值保持；尚未发布到 Mooncakes。
 
 ## 第三轮：逐字段契约演进（尚未发布）
 
@@ -115,8 +115,8 @@ moon test consumer_evolution_test.mbt --deny-warn
 样本对照测试验证范围分类与实际校验结果一致，但不将有限样本当作通用证明。
 
 本轮不是整个契约的蕴含求解器：字段间关系可能影响整体可满足性，不能用
-若干 Relaxed／Equivalent 条目直接推断全局兼容。没有自动发布决策 API，
-也没有隐式替换版本所绑定的规则或改动现有 CLI 门禁。报告提供规则演进证据，
+若干 Relaxed／Equivalent 条目直接推断全局兼容。演进分析本身不作发布决策，
+也不隐式替换版本所绑定的规则或改动现有 CLI 门禁。报告提供规则演进证据，
 实际候选仍需针对所有支持版本执行检查；Unknown 不能用于自动放行。
 
 ## 第四轮：版本绑定文件与 CLI（尚未发布）
@@ -157,7 +157,7 @@ moon run cmd/main -- release-check cmd/main/testdata/release/rejected.release.js
 
 **未填写 policy 时，退出码仍只代表候选对全部绑定规则的接纳结果。**
 有效值变化在默认模式下为提示，并非放行保证。严格策略见下一节。
-规则演进仍为库 API，不自动从清单中推断新旧规则关系。
+规则演进可通过独立 contract-evolve 命令诊断，不自动从清单中推断新旧规则关系。
 默认文本；可通过 `--format json` 输出结构化报告，不修改旧的结构门禁。
 命令只读文件，不写快照、不发布配置。
 
@@ -260,3 +260,36 @@ python -m unittest discover -s scripts -p 'test_*.py'
 
 该脚本仅运行仓库固定样本，不检查任意用户项目，也不发布配置。
 工作流修改的公开执行结果须待推送后确认，本地通过不等于云端 CI 已通过。
+
+## 第八轮：契约演进诊断命令（尚未发布）
+
+```sh
+moon run cmd/main -- contract-evolve cmd/main/testdata/evolution/old.json cmd/main/testdata/evolution/new.json
+moon run cmd/main -- contract-evolve cmd/main/testdata/evolution/old.json cmd/main/testdata/evolution/new.json --format json
+```
+
+两个参数都是消费方规则文件，使用与 consumer-check 相同的契约解析器，
+不是配置快照或 release 清单。文件路径相对当前工作目录（或使用绝对路径）。
+上例 mode 的显式枚举集合缩小、timeout 上限从 60 收紧到 40；默认值相同。
+交换文件顺序则显示放宽。
+
+将第二个文件改为 `cmd/main/testdata/evolution/unknown.json`，会得到
+`unknown`／`default_changed`。该文件改变默认值，不能仅按接纳集合宣称兼容。
+`equivalent.json` 只调整枚举顺序，返回 equivalent；`shifted.json` 移动区间，
+返回 incomparable。相同文件比较时 changes 为空，不代表任意应用都能升级。
+
+默认文本，也支持 `--format text|json`。文本输出路径、分类和原因码；JSON：
+- `kind` 为 `contract_evolution_report`，`schema_version` 为 1；
+- `scope` 为 `per_declared_path`，包含 before_contract／after_contract 文件引用；
+- `analysis_completed: true`，`is_release_gate: false`；故意没有 passed 或 compatible；
+- `changes` 按路径排序，每项仅有 path／impact／reason，不输出规则值；
+- `summary` 统计 equivalent、tightened、relaxed、incomparable、unknown 和 total。
+
+**分析成功一律退出码 0，包括 tightened、incomparable 和 unknown。**
+这表示诊断正常完成，不表示允许发布。参数、文件、JSON 和契约解析错误
+退出码 1，保持普通文本错误。未知参数、发布策略开关及额外文件参数均拒绝。
+标签与路径经 JSON 字符串转义；文件引用元数据仍会显示，不应携带密钥。
+
+该命令复用受限的逐路径库算法，不做全局契约蕴含证明，不把 Unknown 当作
+放行证据，也不自动改动 release-check 的决策。用户仍需显式绑定支持版本，
+对实际候选运行 release-check。本轮没有调整 CI 或发布版本。

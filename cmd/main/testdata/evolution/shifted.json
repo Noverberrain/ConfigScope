@@ -1,0 +1,18 @@
+{
+  "rules": [
+    {
+      "path": "timeout",
+      "type": "number",
+      "minimum": 2,
+      "maximum": 80,
+      "default": 30
+    },
+    {
+      "path": "mode",
+      "allowed_values": [
+        "safe",
+        "fast"
+      ]
+    }
+  ]
+}
