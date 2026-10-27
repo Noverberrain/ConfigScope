@@ -159,7 +159,7 @@ pub fn ConfigCompatibilityChange::message(
 /// Return one change by its stable path order, or `None` when out of bounds.
 pub fn ConfigCompatibilityReport::change(
   self : ConfigCompatibilityReport,
-  index : Int,
+  index : Int32,
 ) -> ConfigCompatibilityChange? {
   self.changes.get(index)
 }
@@ -176,7 +176,7 @@ pub fn ConfigCompatibilityReport::changes(
 /// Return the total number of configuration changes.
 pub fn ConfigCompatibilityReport::change_count(
   self : ConfigCompatibilityReport,
-) -> Int {
+) -> Int32 {
   self.changes.length()
 }
 
@@ -184,7 +184,7 @@ pub fn ConfigCompatibilityReport::change_count(
 /// Return the number of compatible changes.
 pub fn ConfigCompatibilityReport::compatible_count(
   self : ConfigCompatibilityReport,
-) -> Int {
+) -> Int32 {
   self.changes.fold(init=0, (count, change) => {
     if change.impact() == Compatible {
       count + 1
@@ -198,7 +198,7 @@ pub fn ConfigCompatibilityReport::compatible_count(
 /// Return the number of behavioral changes.
 pub fn ConfigCompatibilityReport::behavioral_count(
   self : ConfigCompatibilityReport,
-) -> Int {
+) -> Int32 {
   self.changes.fold(init=0, (count, change) => {
     if change.impact() == Behavioral {
       count + 1
@@ -212,7 +212,7 @@ pub fn ConfigCompatibilityReport::behavioral_count(
 /// Return the number of breaking changes.
 pub fn ConfigCompatibilityReport::breaking_count(
   self : ConfigCompatibilityReport,
-) -> Int {
+) -> Int32 {
   self.changes.fold(init=0, (count, change) => {
     if change.impact() == Breaking {
       count + 1
@@ -227,7 +227,7 @@ pub fn ConfigCompatibilityReport::breaking_count(
 pub fn ConfigCompatibilityReport::violation_count(
   self : ConfigCompatibilityReport,
   policy : ConfigCompatibilityPolicy,
-) -> Int {
+) -> Int32 {
   self.changes.fold(init=0, (count, change) => {
     if policy.allows(change.impact()) {
       count

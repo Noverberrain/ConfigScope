@@ -30,13 +30,16 @@ pub fn LayeredConfig::empty() -> LayeredConfig {
 
 ///|
 /// Return the number of layers in this configuration.
-pub fn LayeredConfig::length(self : LayeredConfig) -> Int {
+pub fn LayeredConfig::length(self : LayeredConfig) -> Int32 {
   self.layers.length()
 }
 
 ///|
 /// Return one layer by position, or `None` when the index is out of bounds.
-pub fn LayeredConfig::layer(self : LayeredConfig, index : Int) -> ConfigLayer? {
+pub fn LayeredConfig::layer(
+  self : LayeredConfig,
+  index : Int32,
+) -> ConfigLayer? {
   self.layers.get(index)
 }
 

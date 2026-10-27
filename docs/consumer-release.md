@@ -1,4 +1,4 @@
-# 消费方版本绑定与回归归因（仓库新增，尚未发布）
+# 消费方版本绑定与回归归因（0.6.0）
 
 本轮核心 API 为 `ConfigConsumerBinding::new` 和
 `ConfigConsumerReleaseReport::check`，均由根包导出。
@@ -40,7 +40,7 @@ moon test consumer_release_test.mbt --deny-warn
 - 已增加声明内的有效值与受限的逐字段规则演进分析，详见后文；
   不证明任意业务兼容。
 
-## 第二轮：默认值与条件启停的有效值分析（尚未发布）
+## 第二轮：默认值与条件启停的有效值分析（0.6.0）
 
 同一绑定契约分别选择历史与候选的声明值：条件不成立为 `Inactive`，
 字段存在为 `Explicit`，字段缺失但有默认值为 `Default`，否则为 `Missing`。
@@ -70,9 +70,9 @@ v2 为 false，整体为 false。它不是现有 CLI 的默认发布策略。
   实际业务影响严重程度。条件始终复用既有默认值与单相等判断语义。
 - 对象用结构相等比较，数组比较整个值；不把未声明路径计为消费方读取。
 - 不可比较不等于不兼容已被证明；返回 false 表示无法确认保持不变。
-- 名称、版本与快照标签沿用第一轮绑定；已有文末的 CLI 输出，可通过 preserve-effective 策略检查有效值保持；尚未发布到 Mooncakes。
+- 名称、版本与快照标签沿用第一轮绑定；已有文末的 CLI 输出，可通过 preserve-effective 策略检查有效值保持；已纳入 0.6.0 发布范围。
 
-## 第三轮：逐字段契约演进（尚未发布）
+## 第三轮：逐字段契约演进（0.6.0）
 
 `old_contract.evolution_to(new_contract)` 返回按路径排序的变更条目：
 路径、`impact()` 和稳定原因码 `reason()`，不返回规则中的配置值。
@@ -119,7 +119,7 @@ moon test consumer_evolution_test.mbt --deny-warn
 也不隐式替换版本所绑定的规则或改动现有 CLI 门禁。报告提供规则演进证据，
 实际候选仍需针对所有支持版本执行检查；Unknown 不能用于自动放行。
 
-## 第四轮：版本绑定文件与 CLI（尚未发布）
+## 第四轮：版本绑定文件与 CLI（0.6.0）
 
 新增独立命令 `release-check <release.json> [--format text|json]`，不改变 `contract-check`。
 清单示例（两个版本共享历史配置，但绑定不同规则）：
@@ -161,7 +161,7 @@ moon run cmd/main -- release-check cmd/main/testdata/release/rejected.release.js
 默认文本；可通过 `--format json` 输出结构化报告，不修改旧的结构门禁。
 命令只读文件，不写快照、不发布配置。
 
-## 第五轮：显式发布策略与阻断原因（尚未发布）
+## 第五轮：显式发布策略与阻断原因（0.6.0）
 
 清单顶层可增加 `"policy": "preserve-effective"`；省略时为 `accept`。
 仅接受这两个精确字符串，null、拼写错误和未知策略都会失败。
@@ -199,7 +199,7 @@ moon run cmd/main -- release-check cmd/main/testdata/release/preserve-unknown.re
 本轮不将规则演进诊断自动合并为发布策略；它的 Unknown 与这里的快照不可比较
 是不同概念，不能互相替代。JSON 报告格式见下一节。
 
-## 第六轮：JSON 发布报告（尚未发布）
+## 第六轮：JSON 发布报告（0.6.0）
 
 ```sh
 moon run cmd/main -- release-check cmd/main/testdata/release/preserve.release.json --format json
@@ -259,9 +259,10 @@ python -m unittest discover -s scripts -p 'test_*.py'
 ```
 
 该脚本仅运行仓库固定样本，不检查任意用户项目，也不发布配置。
-工作流修改的公开执行结果须待推送后确认，本地通过不等于云端 CI 已通过。
+功能提交的公开 CI 证据见 [验收说明](验收说明.md)。后续发布提交仍须单独确认 CI，
+本地通过不等于该次云端运行已通过。
 
-## 第八轮：契约演进诊断命令（尚未发布）
+## 第八轮：契约演进诊断命令（0.6.0）
 
 ```sh
 moon run cmd/main -- contract-evolve cmd/main/testdata/evolution/old.json cmd/main/testdata/evolution/new.json
@@ -292,4 +293,4 @@ moon run cmd/main -- contract-evolve cmd/main/testdata/evolution/old.json cmd/ma
 
 该命令复用受限的逐路径库算法，不做全局契约蕴含证明，不把 Unknown 当作
 放行证据，也不自动改动 release-check 的决策。用户仍需显式绑定支持版本，
-对实际候选运行 release-check。本轮没有调整 CI 或发布版本。
+对实际候选运行 release-check。该命令纳入 0.6.0 发布范围；规则演进诊断不会自动改动发布策略。

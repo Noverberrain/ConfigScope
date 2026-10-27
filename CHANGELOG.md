@@ -1,38 +1,21 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 - 2026-10-27
 
-- Expose per-path consumer rule evolution through contract-evolve with text and
-  schema-v1 JSON diagnostics; successful analysis is not a release-gate result.
-
-- Add CI verification of five fixed release-policy cases with semantic JSON
-  checks, expected-denial handling, report artifacts and a run summary.
-
-- Add schema-v1 release-check JSON reports with version bindings, regression
-  categories, nullable effective-preservation results and shared blocker reasons.
-- Keep computed denials machine-readable with exit code 1; leave input errors
-  as text and preserve the default text format.
-
-- Add explicit accept/preserve-effective manifest policies with per-version
-  blocker codes shared by text reports and exit decisions; fail closed when
-  effective comparisons are unavailable under the strict policy.
-
-- Add read-only release-check with explicit version/contract/snapshot bindings,
-  manifest-relative paths, strict fields and value-free text attribution.
-- Gate candidate acceptance only; effective selection changes remain advisory.
-
-- Analyze per-path required, finite-enumeration and numeric-bound evolution,
-  preserving Unknown for unsupported or interacting changes.
-- Link a numeric tightening example to version-bound candidate rejection.
-
-- Compare per-version effective selections with default provenance and condition
-  activation; expose value-free changes and an opt-in preservation check.
-- Treat invalid snapshots as incomparable and fail the preservation check closed.
-
-- Bind consumer versions to contracts and historical snapshots in a library API.
-- Attribute introduced, persistent and resolved violations by path and kind.
-- Require candidate acceptance across all bindings, including pre-existing issues;
-  reject empty support sets and duplicate consumer/version identities.
+- Bind supported consumer versions to declared contracts and historical snapshots;
+  attribute introduced, persistent and resolved violations without grandfathering.
+- Compare declared effective selections, default provenance and conditional
+  activation; retain incomparable results for invalid snapshots.
+- Add read-only release-check manifests with accept/preserve-effective policies,
+  per-version blockers, and schema-v1 value-free text/JSON release reports.
+- Analyze required, finite-enumeration and numeric-bound evolution per path;
+  expose contract-evolve diagnostics without claiming whole-contract inclusion.
+- Verify five fixed release-policy cases in CI and retain JSON evidence and
+  a summary; expected denials are successful tests, not CI failures.
+- Document executable acceptance cases and distinguish analysis from release
+  decisions and undeclared application behavior.
+- Exercise version binding, effective-value comparison and rule evolution in
+  the independently installed README example.
 
 ## 0.5.0 - 2026-10-15
 

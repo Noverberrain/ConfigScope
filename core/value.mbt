@@ -68,7 +68,7 @@ pub fn MergeResult::value(self : MergeResult) -> ConfigValue {
 
 ///|
 /// Return the number of structural conflicts found by the merge.
-pub fn MergeResult::conflict_count(self : MergeResult) -> Int {
+pub fn MergeResult::conflict_count(self : MergeResult) -> Int32 {
   self.conflicts.length()
 }
 
@@ -76,7 +76,7 @@ pub fn MergeResult::conflict_count(self : MergeResult) -> Int {
 /// Return one structural conflict, or `None` when the index is out of bounds.
 pub fn MergeResult::conflict(
   self : MergeResult,
-  index : Int,
+  index : Int32,
 ) -> ConfigConflict? {
   self.conflicts.get(index)
 }
@@ -195,7 +195,7 @@ pub fn ConfigValue::as_string(self : ConfigValue) -> String? {
 ///|
 /// Return the number of elements for an array or fields for an object.
 /// Scalar values return `None`.
-pub fn ConfigValue::length(self : ConfigValue) -> Int? {
+pub fn ConfigValue::length(self : ConfigValue) -> Int32? {
   match self.raw {
     Array(values) => Some(values.length())
     Object(fields) => Some(fields.length())
@@ -206,7 +206,7 @@ pub fn ConfigValue::length(self : ConfigValue) -> Int? {
 ///|
 /// Read one array element, or `None` if this is not an array or the index is
 /// outside its bounds.
-pub fn ConfigValue::element(self : ConfigValue, index : Int) -> ConfigValue? {
+pub fn ConfigValue::element(self : ConfigValue, index : Int32) -> ConfigValue? {
   match self.raw {
     Array(values) => values.get(index).map(raw => { raw, })
     _ => None

@@ -64,7 +64,7 @@ fn read_contract_snapshot(
 fn read_contract_baselines(
   manifest_path : String,
   paths : Array[String],
-  index : Int,
+  index : Int32,
   baselines : Array[@configscope.ConfigCompatibilityBaseline],
 ) -> Result[Array[@configscope.ConfigCompatibilityBaseline], String] {
   if index >= paths.length() {
@@ -88,7 +88,7 @@ fn read_contract_baselines(
 /// contributes once per comparison.
 fn contract_change_count(
   report : @configscope.ConfigCompatibilityMatrixReport,
-) -> Int {
+) -> Int32 {
   report
   .entries()
   .fold(init=0, (count, entry) => count + entry.report().change_count())

@@ -18,7 +18,7 @@ pub extend ConfigPath with Debug::{to_repr}
 /// Describes why a textual configuration path could not be parsed.
 pub(all) enum ConfigPathError {
   EmptyPath
-  EmptySegment(Int)
+  EmptySegment(Int32)
 } derive(Eq, Debug)
 
 ///|
@@ -48,13 +48,13 @@ pub fn parse_path(source : String) -> Result[ConfigPath, ConfigPathError] {
 
 ///|
 /// Return the number of segments in the path.
-pub fn ConfigPath::length(self : ConfigPath) -> Int {
+pub fn ConfigPath::length(self : ConfigPath) -> Int32 {
   self.segments.length()
 }
 
 ///|
 /// Return one segment, or `None` when the index is outside the path.
-pub fn ConfigPath::segment(self : ConfigPath, index : Int) -> String? {
+pub fn ConfigPath::segment(self : ConfigPath, index : Int32) -> String? {
   self.segments.get(index)
 }
 

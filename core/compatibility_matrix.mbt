@@ -71,7 +71,7 @@ pub fn ConfigCompatibilityMatrixEntry::passes(
 pub fn ConfigCompatibilityMatrixEntry::violation_count(
   self : ConfigCompatibilityMatrixEntry,
   policy : ConfigCompatibilityPolicy,
-) -> Int {
+) -> Int32 {
   self.report.violation_count(policy)
 }
 
@@ -91,7 +91,7 @@ pub extend ConfigCompatibilityMatrixReport with Debug::{to_repr}
 /// Return one matrix entry in the original baseline order.
 pub fn ConfigCompatibilityMatrixReport::entry(
   self : ConfigCompatibilityMatrixReport,
-  index : Int,
+  index : Int32,
 ) -> ConfigCompatibilityMatrixEntry? {
   self.entries.get(index)
 }
@@ -108,7 +108,7 @@ pub fn ConfigCompatibilityMatrixReport::entries(
 /// Return the number of baselines checked.
 pub fn ConfigCompatibilityMatrixReport::baseline_count(
   self : ConfigCompatibilityMatrixReport,
-) -> Int {
+) -> Int32 {
   self.entries.length()
 }
 
@@ -117,7 +117,7 @@ pub fn ConfigCompatibilityMatrixReport::baseline_count(
 pub fn ConfigCompatibilityMatrixReport::passed_count(
   self : ConfigCompatibilityMatrixReport,
   policy : ConfigCompatibilityPolicy,
-) -> Int {
+) -> Int32 {
   self.entries.fold(init=0, (count, entry) => {
     if entry.passes(policy) {
       count + 1
@@ -132,7 +132,7 @@ pub fn ConfigCompatibilityMatrixReport::passed_count(
 pub fn ConfigCompatibilityMatrixReport::failed_count(
   self : ConfigCompatibilityMatrixReport,
   policy : ConfigCompatibilityPolicy,
-) -> Int {
+) -> Int32 {
   self.entries.fold(init=0, (count, entry) => {
     if entry.passes(policy) {
       count

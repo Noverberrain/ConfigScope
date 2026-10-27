@@ -35,7 +35,7 @@ fn validate_contract_init_ignore_path(
 /// Parse the inputs and options for `contract-init`.
 fn parse_contract_init_arguments(
   args : Array[String],
-  index : Int,
+  index : Int32,
   candidate_path : String,
   baseline_paths : Array[String],
   seen_baselines : Map[String, Bool],
@@ -155,7 +155,7 @@ fn parse_contract_init_arguments(
 /// Validate all snapshots before creating a contract file.
 fn validate_contract_init_baselines(
   paths : Array[String],
-  index : Int,
+  index : Int32,
 ) -> Result[Unit, String] {
   if index >= paths.length() {
     Ok(())

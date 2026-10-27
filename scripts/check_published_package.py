@@ -11,7 +11,9 @@ SECTION = "### Use from another MoonBit project\n"
 EXPECTED_OUTPUT = (
     "breaking changes: 1\nconsumer violations: 1\n"
     "new rule violations: missing_required,not_integer\n"
-    "range violations: above_maximum\ndefaulted violations: 0"
+    "range violations: above_maximum\ndefaulted violations: 0\n"
+    "release candidate accepted: true\neffective values preserved: false\n"
+    "rule tightened: true"
 )
 
 

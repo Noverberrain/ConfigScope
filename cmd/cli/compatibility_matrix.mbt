@@ -10,7 +10,7 @@ priv struct CompatibilityMatrixArguments {
 /// Parse baseline files and the optional release gate.
 fn parse_compatibility_matrix_arguments(
   args : Array[String],
-  index : Int,
+  index : Int32,
   baseline_paths : Array[String],
   policy : @configscope.ConfigCompatibilityPolicy,
   format : CliOutputFormat,
@@ -86,7 +86,7 @@ fn parse_compatibility_matrix_arguments(
 /// Read all named baseline snapshots in input order.
 fn read_compatibility_baselines(
   paths : Array[String],
-  index : Int,
+  index : Int32,
   baselines : Array[@configscope.ConfigCompatibilityBaseline],
 ) -> Result[Array[@configscope.ConfigCompatibilityBaseline], String] {
   if index >= paths.length() {

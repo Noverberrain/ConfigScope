@@ -130,11 +130,11 @@ ConfigScope focuses on compatibility between released configuration versions.
 
 ### Use from another MoonBit project
 
-The published library is `Noverberrain/configscope@0.5.0`. From the root of
+The published library is `Noverberrain/configscope@0.6.0`. From the root of
 your own MoonBit project, add it as a dependency:
 
 ```sh
-moon add Noverberrain/configscope@0.5.0
+moon add Noverberrain/configscope@0.6.0
 ```
 
 Import the root package in the consumer's `cmd/main/moon.pkg`:
@@ -187,6 +187,31 @@ fn main raise {
   println("range violations: \{range_kinds}")
   let empty = @configscope.ConfigValue::parse_json("{}")
   println("defaulted violations: \{advanced.check(empty).length()}")
+  let old_rules = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"timeout\",\"type\":\"number\",\"minimum\":1,\"maximum\":60,\"default\":30}]}",
+    ),
+  ).unwrap()
+  let new_rules = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"timeout\",\"type\":\"number\",\"minimum\":1,\"maximum\":40,\"default\":30}]}",
+    ),
+  ).unwrap()
+  let binding = @configscope.ConfigConsumerBinding::new(
+    "service",
+    "v1",
+    "release-30",
+    old_rules,
+    @configscope.ConfigValue::parse_json("{\"timeout\":30}"),
+  ).unwrap()
+  let release = @configscope.ConfigConsumerReleaseReport::check(
+    [binding],
+    @configscope.ConfigValue::parse_json("{\"timeout\":35}"),
+  ).unwrap()
+  println("release candidate accepted: \{release.passes()}")
+  println("effective values preserved: \{release.preserves_effective_values()}")
+  let tightened = old_rules.evolution_to(new_rules)[0].impact() == Tightened
+  println("rule tightened: \{tightened}")
 }
 ```
 
@@ -196,6 +221,9 @@ from a number to a string and violates the declared numeric consumer rule.
 The additional checks print `new rule violations: missing_required,not_integer`,
 `range violations: above_maximum` and `defaulted violations: 0`, exercising
 conditional requirements, integer/bound checks and defaults in the installed library.
+The version-binding example additionally prints `release candidate accepted: true`,
+`effective values preserved: false` and `rule tightened: true`. A valid candidate
+can change a declared effective value; per-path evolution remains a separate diagnostic.
 The release verification script checks this example in a separate project
 using the published package, without a local path dependency. The CLI commands described below
 belong to the ConfigScope repository; installing the library does not install
@@ -752,7 +780,7 @@ Standalone consumer reports use `kind: consumer_report`, `scope`, `passed`
 and `issues`. Computed violations return exit code `1` with JSON on standard
 output. Argument, file and declaration errors remain ordinary text errors.
 
-## Unreleased: consumer version regression analysis
+## Consumer version regression analysis (0.6.0)
 
 The checkout adds explicit consumer/version/contract/historical-snapshot bindings
 and introduced, persistent and resolved violation attribution. Candidate acceptance
@@ -760,8 +788,8 @@ is strict across all supplied versions; existing violations are not grandfathere
 The library API also compares declared effective selections, including defaults
 and conditional activation, with a separate opt-in preservation check. Invalid
 snapshots are marked incomparable, not unchanged. Reports contain paths and
-sources, not configuration values. These additions are not in Mooncakes 0.5.0.
-The checkout now offers `release-check <release.json>` for manifest-bound
+sources, not configuration values. These additions are included in Mooncakes 0.6.0.
+The repository CLI offers `release-check <release.json>` for manifest-bound
 candidate acceptance by default. An optional manifest policy `preserve-effective`
 also blocks changed effective selections and incomparable snapshots, with explicit
 per-version blocker reasons. `release-check --format json` exposes a versioned,

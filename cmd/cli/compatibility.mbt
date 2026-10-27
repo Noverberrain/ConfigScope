@@ -41,7 +41,7 @@ fn parse_compatibility_policy(
 /// Parse optional compatibility gate arguments.
 fn parse_compatibility_options(
   args : Array[String],
-  index : Int,
+  index : Int32,
   policy : @configscope.ConfigCompatibilityPolicy,
   format : CliOutputFormat,
 ) -> Result[CompatibilityOptions, String] {

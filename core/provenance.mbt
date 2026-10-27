@@ -20,7 +20,7 @@ pub fn LayeredMergeResult::value(self : LayeredMergeResult) -> ConfigValue {
 
 ///|
 /// Return the number of structural conflicts found during the merge.
-pub fn LayeredMergeResult::conflict_count(self : LayeredMergeResult) -> Int {
+pub fn LayeredMergeResult::conflict_count(self : LayeredMergeResult) -> Int32 {
   self.conflicts.length()
 }
 
@@ -28,7 +28,7 @@ pub fn LayeredMergeResult::conflict_count(self : LayeredMergeResult) -> Int {
 /// Return one structural conflict, or `None` when the index is out of bounds.
 pub fn LayeredMergeResult::conflict(
   self : LayeredMergeResult,
-  index : Int,
+  index : Int32,
 ) -> ConfigConflict? {
   self.conflicts.get(index)
 }
@@ -44,7 +44,7 @@ pub fn LayeredMergeResult::source(
 
 ///|
 /// Return the number of tracked configuration paths.
-pub fn LayeredMergeResult::source_count(self : LayeredMergeResult) -> Int {
+pub fn LayeredMergeResult::source_count(self : LayeredMergeResult) -> Int32 {
   self.sources.length()
 }
 

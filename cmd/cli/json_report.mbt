@@ -4,7 +4,7 @@ fn json_string(value : String) -> Json {
 }
 
 ///|
-fn json_int(value : Int) -> Json {
+fn json_int(value : Int32) -> Json {
   Json::number(value.to_double())
 }
 
@@ -110,7 +110,7 @@ fn render_json_compatibility_contract(
   manifest_path : String,
   candidate_path : String,
   ignored_paths : Array[@configscope.ConfigPath],
-  ignored_change_count : Int,
+  ignored_change_count : Int32,
   report : @configscope.ConfigCompatibilityMatrixReport,
   policy : @configscope.ConfigCompatibilityPolicy,
   consumers : Array[ConsumerGateEntry],
