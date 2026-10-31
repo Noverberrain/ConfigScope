@@ -25,3 +25,32 @@ test "evolution report escapes metadata while hiding enumeration values" {
     Some(label),
   )
 }
+
+///|
+test "finite-extrema equivalence is reflected in text and JSON diagnostics" {
+  let old = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"n\",\"type\":\"number\",\"integer\":true}]}",
+    ),
+  ).unwrap()
+  let new = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"n\",\"type\":\"number\",\"integer\":true,\"maximum\":1.7976931348623157e308}]}",
+    ),
+  ).unwrap()
+  let changes = old.evolution_to(new)
+  let text = render_contract_evolution("old", "new", changes, Text)
+  assert_true(text.contains("[equivalent] \"n\" reason=numeric_bounds"))
+  let report = @configscope.ConfigValue::parse_json(
+    render_contract_evolution("old", "new", changes, Json),
+  )
+  assert_eq(
+    report.field("summary").unwrap().field("equivalent").unwrap().as_number(),
+    Some(1.0),
+  )
+  assert_eq(
+    report.field("summary").unwrap().field("tightened").unwrap().as_number(),
+    Some(0.0),
+  )
+  assert_eq(report.field("is_release_gate").unwrap().as_boolean(), Some(false))
+}

@@ -75,6 +75,28 @@ fn evolution_upper_included(inner : Double?, outer : Double?) -> Bool {
 }
 
 ///|
+/// Numeric constraints already reject infinities and NaN. Omitted bounds then
+/// mean finite Double extrema, not a larger mathematical interval. Unconstrained
+/// number rules retain None bounds because their validator admits non-finites.
+fn evolution_numeric_interval(rule : ConfigConsumerRule) -> (Double?, Double?) {
+  if !consumer_has_numeric_constraints(rule) {
+    return (None, None)
+  }
+  let lower = match rule.minimum {
+    Some(value) => value
+    None => @double.min_value
+  }
+  let upper = match rule.maximum {
+    Some(value) => value
+    None => @double.max_value
+  }
+  (
+    Some(if rule.integer { lower.ceil() } else { lower }),
+    Some(if rule.integer { upper.floor() } else { upper }),
+  )
+}
+
+///|
 fn evolution_path_overlap(a : ConfigPath, b : ConfigPath) -> Bool {
   let limit = if a.length() < b.length() { a.length() } else { b.length() }
   for index in 0..<limit {
@@ -127,12 +149,9 @@ fn evolution_rule_change(
       _ => return (Unknown, "unbounded_allowed_values")
     }
   }
-  // Bounds only exist on explicit number rules. Integer intervals are compared
-  // after rounding inward, not by literal endpoint movement.
-  let old_min = old.minimum.map(v => if old.integer { v.ceil() } else { v })
-  let new_min = new.minimum.map(v => if new.integer { v.ceil() } else { v })
-  let old_max = old.maximum.map(v => if old.integer { v.floor() } else { v })
-  let new_max = new.maximum.map(v => if new.integer { v.floor() } else { v })
+  // Normalize the validator's finite domain before comparing rounded intervals.
+  let (old_min, old_max) = evolution_numeric_interval(old)
+  let (new_min, new_max) = evolution_numeric_interval(new)
   if old.allowed_values is Some(_) {
     // Explicit enum values were validated against each interval at parse time;
     // changing bounds cannot remove any value from the unchanged allowed set.

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fix false tightening/relaxation diagnostics when explicit finite Double extrema
+  replace omitted bounds in already finite numeric domains. Preserve admission
+  semantics for unconstrained number rules; add symmetric API and CLI regressions.
+
 ## 0.6.0 - 2026-10-27
 
 - Bind supported consumer versions to declared contracts and historical snapshots;

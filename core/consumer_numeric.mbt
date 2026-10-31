@@ -19,13 +19,20 @@ fn parse_consumer_bound(
 }
 
 ///|
+/// These constraints make validation reject every non-finite numeric value.
+/// Keep evolution's domain normalization tied to this exact predicate.
+fn consumer_has_numeric_constraints(rule : ConfigConsumerRule) -> Bool {
+  rule.integer || rule.minimum is Some(_) || rule.maximum is Some(_)
+}
+
+///|
 /// Report one stable numeric violation, before checking the allowed-value set.
 /// Avoid Int conversion: valid integral Doubles can exceed the Int range.
 fn consumer_numeric_violation(
   rule : ConfigConsumerRule,
   value : ConfigValue,
 ) -> ConfigConsumerIssueKind? {
-  if !rule.integer && rule.minimum is None && rule.maximum is None {
+  if !consumer_has_numeric_constraints(rule) {
     return None
   }
   let number = match value.as_number() {
