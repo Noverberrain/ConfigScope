@@ -130,11 +130,11 @@ ConfigScope focuses on compatibility between released configuration versions.
 
 ### Use from another MoonBit project
 
-The published library is `Noverberrain/configscope@0.6.0`. From the root of
+The published library is `Noverberrain/configscope@0.6.1`. From the root of
 your own MoonBit project, add it as a dependency:
 
 ```sh
-moon add Noverberrain/configscope@0.6.0
+moon add Noverberrain/configscope@0.6.1
 ```
 
 Import the root package in the consumer's `cmd/main/moon.pkg`:
@@ -212,6 +212,19 @@ fn main raise {
   println("effective values preserved: \{release.preserves_effective_values()}")
   let tightened = old_rules.evolution_to(new_rules)[0].impact() == Tightened
   println("rule tightened: \{tightened}")
+  let integer_rules = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"n\",\"type\":\"number\",\"integer\":true}]}",
+    ),
+  ).unwrap()
+  let finite_limit = @configscope.ConfigConsumerContract::from_value(
+    @configscope.ConfigValue::parse_json(
+      "{\"rules\":[{\"path\":\"n\",\"type\":\"number\",\"integer\":true,\"maximum\":1.7976931348623157e308}]}",
+    ),
+  ).unwrap()
+  let equivalent = integer_rules.evolution_to(finite_limit)[0].impact() ==
+    Equivalent
+  println("finite extrema equivalent: \{equivalent}")
 }
 ```
 
@@ -224,6 +237,8 @@ conditional requirements, integer/bound checks and defaults in the installed lib
 The version-binding example additionally prints `release candidate accepted: true`,
 `effective values preserved: false` and `rule tightened: true`. A valid candidate
 can change a declared effective value; per-path evolution remains a separate diagnostic.
+The 0.6.1 regression prints `finite extrema equivalent: true`: adding the maximum
+finite Double bound does not narrow an already finite integer domain.
 The release verification script checks this example in a separate project
 using the published package, without a local path dependency. The CLI commands described below
 belong to the ConfigScope repository; installing the library does not install

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.1 - 2026-10-31
 
 - Fix false tightening/relaxation diagnostics when explicit finite Double extrema
   replace omitted bounds in already finite numeric domains. Preserve admission

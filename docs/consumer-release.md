@@ -295,7 +295,7 @@ moon run cmd/main -- contract-evolve cmd/main/testdata/evolution/old.json cmd/ma
 放行证据，也不自动改动 release-check 的决策。用户仍需显式绑定支持版本，
 对实际候选运行 release-check。该命令纳入 0.6.0 发布范围；规则演进诊断不会自动改动发布策略。
 
-## 未发布修复：数值极值与省略边界
+## 0.6.1 修复：数值极值与省略边界
 
 0.6.0 在整数规则上增加 Double 最大有限值上限时，会误报 tightened；
 反向比较会误报 relaxed。仓库修复先按校验器的实际值域归一化省略边界，
@@ -305,4 +305,4 @@ moon run cmd/main -- contract-evolve cmd/main/testdata/evolution/old.json cmd/ma
 完全没有数值约束的 number 规则仍沿用原 API 的非有限值接纳行为，不强制归一化，
 避免把真正收紧误判为等价。修复不改变候选校验或发布策略，不新增公共 API。
 对称边界、真实收紧／放宽、非有限值及文本／JSON 诊断均有回归测试。
-该修复尚未发布到 Mooncakes；0.6.0 仍含上述极端值诊断问题。
+该修复自 0.6.1 提供；0.6.0 仍含上述极端值诊断问题，验证补丁应安装 0.6.1。
