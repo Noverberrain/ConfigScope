@@ -3,9 +3,10 @@
 ///
 /// Layers are merged from first to last, so later layers have higher
 /// precedence.
+#derive(Eq, Debug)
 pub struct LayeredConfig {
   layers : Array[ConfigLayer]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend LayeredConfig with Eq::{not_equal, equal}

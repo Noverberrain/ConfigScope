@@ -1,5 +1,6 @@
 ///|
 /// The JSON-compatible kinds represented by a configuration value.
+#derive(Eq, Debug)
 pub(all) enum ConfigValueKind {
   Null
   Boolean
@@ -7,7 +8,7 @@ pub(all) enum ConfigValueKind {
   String
   Array
   Object
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigValueKind with Eq::{not_equal, equal}
@@ -17,11 +18,12 @@ pub extend ConfigValueKind with Debug::{to_repr}
 
 ///|
 /// A path at which recursive merge encountered incompatible structures.
+#derive(Eq, Debug)
 pub struct ConfigConflict {
   path : ConfigPath
   earlier_kind : ConfigValueKind
   later_kind : ConfigValueKind
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigConflict with Eq::{not_equal, equal}
@@ -31,10 +33,11 @@ pub extend ConfigConflict with Debug::{to_repr}
 
 ///|
 /// The merged value and structural conflicts found while producing it.
+#derive(Eq, Debug)
 pub struct MergeResult {
   value : ConfigValue
   conflicts : Array[ConfigConflict]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend MergeResult with Eq::{not_equal, equal}
@@ -86,9 +89,10 @@ pub fn MergeResult::conflict(
 ///
 /// The underlying representation is intentionally private. This keeps later
 /// merge and provenance work independent from the concrete JSON container.
+#derive(Eq, Debug)
 pub struct ConfigValue {
   raw : Json
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigValue with Eq::{not_equal, equal}

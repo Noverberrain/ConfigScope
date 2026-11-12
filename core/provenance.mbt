@@ -1,10 +1,11 @@
 ///|
 /// The merged configuration together with the source of each final field.
+#derive(Eq, Debug)
 pub struct LayeredMergeResult {
   value : ConfigValue
   conflicts : Array[ConfigConflict]
   sources : Map[String, String]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend LayeredMergeResult with Eq::{not_equal, equal}

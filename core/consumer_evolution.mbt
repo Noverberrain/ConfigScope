@@ -1,12 +1,13 @@
 ///|
 /// Classification of a SINGLE declared path, not whole-contract inclusion.
+#derive(Eq, Debug)
 pub(all) enum ConfigContractEvolutionImpact {
   Equivalent
   Tightened
   Relaxed
   Incomparable
   Unknown
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigContractEvolutionImpact with Eq::{not_equal, equal}

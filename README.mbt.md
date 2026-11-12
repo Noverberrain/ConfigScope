@@ -1,5 +1,8 @@
 # ConfigScope
 
+Toolchain verified on Windows (2026-11-13): `moon 0.1.20261104` and
+`moonc 0.10.20+65efd5b93`; checked, built and tested wasm, wasm-gc, JS and native.
+
 ConfigScope is a MoonBit-native configuration release checker. Snapshot
 differences are heuristic; they do not prove that an application can safely
 upgrade. The `consumer-check` command checks explicitly declared consumer

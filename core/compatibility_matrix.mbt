@@ -1,9 +1,10 @@
 ///|
 /// A named historical configuration snapshot used as a compatibility baseline.
+#derive(Eq, Debug)
 pub struct ConfigCompatibilityBaseline {
   name : String
   value : ConfigValue
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityBaseline with Eq::{not_equal, equal}
@@ -30,10 +31,11 @@ pub fn ConfigCompatibilityBaseline::name(
 
 ///|
 /// One candidate-to-baseline result in a compatibility matrix.
+#derive(Eq, Debug)
 pub struct ConfigCompatibilityMatrixEntry {
   baseline_name : String
   report : ConfigCompatibilityReport
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityMatrixEntry with Eq::{not_equal, equal}
@@ -77,9 +79,10 @@ pub fn ConfigCompatibilityMatrixEntry::violation_count(
 
 ///|
 /// The compatibility results for one candidate against multiple baselines.
+#derive(Eq, Debug)
 pub struct ConfigCompatibilityMatrixReport {
   entries : Array[ConfigCompatibilityMatrixEntry]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityMatrixReport with Eq::{not_equal, equal}

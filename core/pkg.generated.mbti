@@ -12,12 +12,13 @@ pub fn parse_path(String) -> Result[ConfigPath, ConfigPathError]
 // Errors
 
 // Types and methods
+#derive(Eq, @debug.Debug)
 pub struct ConfigAuditIssue {
   path : ConfigPath
   kind : ConfigAuditIssueKind
   expected_kind : ConfigValueKind?
   actual_kind : ConfigValueKind?
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigAuditIssue::actual_kind(Self) -> ConfigValueKind?
 pub fn ConfigAuditIssue::equal(Self, Self) -> Bool
 pub fn ConfigAuditIssue::expected_kind(Self) -> ConfigValueKind?
@@ -27,19 +28,21 @@ pub fn ConfigAuditIssue::not_equal(Self, Self) -> Bool
 pub fn ConfigAuditIssue::path(Self) -> ConfigPath
 pub fn ConfigAuditIssue::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigAuditIssueKind {
   MissingRequired
   TypeMismatch
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigAuditIssueKind::equal(Self, Self) -> Bool
 pub fn ConfigAuditIssueKind::not_equal(Self, Self) -> Bool
 pub fn ConfigAuditIssueKind::to_repr(Self) -> @debug.Repr
 pub fn ConfigAuditIssueKind::to_string(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigAuditRule {
   Required(ConfigPath)
   TypeIs(ConfigPath, ConfigValueKind)
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigAuditRule::equal(Self, Self) -> Bool
 pub fn ConfigAuditRule::not_equal(Self, Self) -> Bool
 pub fn ConfigAuditRule::path(Self) -> ConfigPath
@@ -47,20 +50,22 @@ pub fn ConfigAuditRule::required(ConfigPath) -> Self
 pub fn ConfigAuditRule::to_repr(Self) -> @debug.Repr
 pub fn ConfigAuditRule::type_is(ConfigPath, ConfigValueKind) -> Self
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigCompatibilityBaseline {
   name : String
   value : ConfigValue
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityBaseline::equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityBaseline::name(Self) -> String
 pub fn ConfigCompatibilityBaseline::new(String, ConfigValue) -> Self
 pub fn ConfigCompatibilityBaseline::not_equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityBaseline::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigCompatibilityChange {
   difference : ConfigDiff
   impact : ConfigCompatibilityImpact
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityChange::after(Self) -> ConfigValue?
 pub fn ConfigCompatibilityChange::before(Self) -> ConfigValue?
 pub fn ConfigCompatibilityChange::difference_kind(Self) -> ConfigDiffKind
@@ -71,13 +76,14 @@ pub fn ConfigCompatibilityChange::not_equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityChange::path(Self) -> ConfigPath
 pub fn ConfigCompatibilityChange::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigCompatibilityContract {
   candidate_path : String
   baseline_paths : Array[String]
   policy : ConfigCompatibilityPolicy
   ignored_paths : Array[ConfigPath]
   consumer_paths : Array[String]
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityContract::baseline_paths(Self) -> Array[String]
 pub fn ConfigCompatibilityContract::candidate_path(Self) -> String
 pub fn ConfigCompatibilityContract::consumer_paths(Self) -> Array[String]
@@ -88,20 +94,22 @@ pub fn ConfigCompatibilityContract::not_equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityContract::policy(Self) -> ConfigCompatibilityPolicy
 pub fn ConfigCompatibilityContract::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigCompatibilityImpact {
   Compatible
   Behavioral
   Breaking
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityImpact::equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityImpact::not_equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityImpact::to_repr(Self) -> @debug.Repr
 pub fn ConfigCompatibilityImpact::to_string(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigCompatibilityMatrixEntry {
   baseline_name : String
   report : ConfigCompatibilityReport
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityMatrixEntry::baseline_name(Self) -> String
 pub fn ConfigCompatibilityMatrixEntry::equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityMatrixEntry::not_equal(Self, Self) -> Bool
@@ -110,9 +118,10 @@ pub fn ConfigCompatibilityMatrixEntry::report(Self) -> ConfigCompatibilityReport
 pub fn ConfigCompatibilityMatrixEntry::to_repr(Self) -> @debug.Repr
 pub fn ConfigCompatibilityMatrixEntry::violation_count(Self, ConfigCompatibilityPolicy) -> Int32
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigCompatibilityMatrixReport {
   entries : Array[ConfigCompatibilityMatrixEntry]
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityMatrixReport::baseline_count(Self) -> Int32
 pub fn ConfigCompatibilityMatrixReport::entries(Self) -> Array[ConfigCompatibilityMatrixEntry]
 pub fn ConfigCompatibilityMatrixReport::entry(Self, Int32) -> ConfigCompatibilityMatrixEntry?
@@ -125,19 +134,21 @@ pub fn ConfigCompatibilityMatrixReport::passed_count(Self, ConfigCompatibilityPo
 pub fn ConfigCompatibilityMatrixReport::passes(Self, ConfigCompatibilityPolicy) -> Bool
 pub fn ConfigCompatibilityMatrixReport::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigCompatibilityPolicy {
   BreakingOnly
   NoBehavioralChanges
   NoChanges
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityPolicy::equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityPolicy::not_equal(Self, Self) -> Bool
 pub fn ConfigCompatibilityPolicy::to_repr(Self) -> @debug.Repr
 pub fn ConfigCompatibilityPolicy::to_string(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigCompatibilityReport {
   changes : Array[ConfigCompatibilityChange]
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigCompatibilityReport::behavioral_count(Self) -> Int32
 pub fn ConfigCompatibilityReport::breaking_count(Self) -> Int32
 pub fn ConfigCompatibilityReport::change(Self, Int32) -> ConfigCompatibilityChange?
@@ -153,11 +164,12 @@ pub fn ConfigCompatibilityReport::passes(Self, ConfigCompatibilityPolicy) -> Boo
 pub fn ConfigCompatibilityReport::to_repr(Self) -> @debug.Repr
 pub fn ConfigCompatibilityReport::violation_count(Self, ConfigCompatibilityPolicy) -> Int32
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigConflict {
   path : ConfigPath
   earlier_kind : ConfigValueKind
   later_kind : ConfigValueKind
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigConflict::earlier_kind(Self) -> ConfigValueKind
 pub fn ConfigConflict::equal(Self, Self) -> Bool
 pub fn ConfigConflict::later_kind(Self) -> ConfigValueKind
@@ -174,9 +186,10 @@ pub struct ConfigConsumerBinding {
 }
 pub fn ConfigConsumerBinding::new(String, String, String, ConfigConsumerContract, ConfigValue) -> Result[Self, String]
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigConsumerContract {
   rules : Array[ConfigConsumerRule]
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigConsumerContract::check(Self, ConfigValue) -> Array[ConfigConsumerIssue]
 pub fn ConfigConsumerContract::equal(Self, Self) -> Bool
 pub fn ConfigConsumerContract::evolution_to(Self, Self) -> Array[ConfigContractEvolutionChange]
@@ -184,16 +197,18 @@ pub fn ConfigConsumerContract::from_value(ConfigValue) -> Result[Self, String]
 pub fn ConfigConsumerContract::not_equal(Self, Self) -> Bool
 pub fn ConfigConsumerContract::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigConsumerIssue {
   path : ConfigPath
   kind : ConfigConsumerIssueKind
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigConsumerIssue::equal(Self, Self) -> Bool
 pub fn ConfigConsumerIssue::kind(Self) -> ConfigConsumerIssueKind
 pub fn ConfigConsumerIssue::not_equal(Self, Self) -> Bool
 pub fn ConfigConsumerIssue::path(Self) -> ConfigPath
 pub fn ConfigConsumerIssue::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigConsumerIssueKind {
   MissingRequired
   TypeMismatch
@@ -202,7 +217,7 @@ pub(all) enum ConfigConsumerIssueKind {
   AboveMaximum
   NotInteger
   NonFiniteNumber
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigConsumerIssueKind::equal(Self, Self) -> Bool
 pub fn ConfigConsumerIssueKind::not_equal(Self, Self) -> Bool
 pub fn ConfigConsumerIssueKind::to_repr(Self) -> @debug.Repr
@@ -237,6 +252,7 @@ pub fn ConfigConsumerReleaseReport::entries(Self) -> Array[ConfigConsumerRegress
 pub fn ConfigConsumerReleaseReport::passes(Self) -> Bool
 pub fn ConfigConsumerReleaseReport::preserves_effective_values(Self) -> Bool
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigConsumerRule {
   path : ConfigPath
   required : Bool
@@ -247,7 +263,7 @@ pub struct ConfigConsumerRule {
   maximum : Double?
   integer : Bool
   when : (ConfigPath, ConfigValue)?
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigConsumerRule::equal(Self, Self) -> Bool
 pub fn ConfigConsumerRule::not_equal(Self, Self) -> Bool
 pub fn ConfigConsumerRule::to_repr(Self) -> @debug.Repr
@@ -261,23 +277,25 @@ pub fn ConfigContractEvolutionChange::impact(Self) -> ConfigContractEvolutionImp
 pub fn ConfigContractEvolutionChange::path(Self) -> ConfigPath
 pub fn ConfigContractEvolutionChange::reason(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigContractEvolutionImpact {
   Equivalent
   Tightened
   Relaxed
   Incomparable
   Unknown
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigContractEvolutionImpact::equal(Self, Self) -> Bool
 pub fn ConfigContractEvolutionImpact::not_equal(Self, Self) -> Bool
 pub fn ConfigContractEvolutionImpact::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigDiff {
   path : ConfigPath
   kind : ConfigDiffKind
   before : ConfigValue?
   after : ConfigValue?
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigDiff::after(Self) -> ConfigValue?
 pub fn ConfigDiff::before(Self) -> ConfigValue?
 pub fn ConfigDiff::equal(Self, Self) -> Bool
@@ -286,12 +304,13 @@ pub fn ConfigDiff::not_equal(Self, Self) -> Bool
 pub fn ConfigDiff::path(Self) -> ConfigPath
 pub fn ConfigDiff::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigDiffKind {
   Added
   Removed
   Changed
   TypeChanged
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigDiffKind::equal(Self, Self) -> Bool
 pub fn ConfigDiffKind::not_equal(Self, Self) -> Bool
 pub fn ConfigDiffKind::to_repr(Self) -> @debug.Repr
@@ -308,21 +327,23 @@ pub fn ConfigEffectiveChange::before(Self) -> ConfigEffectiveSource
 pub fn ConfigEffectiveChange::path(Self) -> ConfigPath
 pub fn ConfigEffectiveChange::value_changed(Self) -> Bool
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigEffectiveSource {
   Inactive
   Missing
   Explicit
   Default
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigEffectiveSource::equal(Self, Self) -> Bool
 pub fn ConfigEffectiveSource::not_equal(Self, Self) -> Bool
 pub fn ConfigEffectiveSource::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigExplanation {
   path : ConfigPath
   value : ConfigValue
   source : String
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigExplanation::equal(Self, Self) -> Bool
 pub fn ConfigExplanation::kind(Self) -> ConfigValueKind
 pub fn ConfigExplanation::not_equal(Self, Self) -> Bool
@@ -331,10 +352,11 @@ pub fn ConfigExplanation::source(Self) -> String
 pub fn ConfigExplanation::to_repr(Self) -> @debug.Repr
 pub fn ConfigExplanation::value(Self) -> ConfigValue
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigLayer {
   name : String
   value : ConfigValue
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigLayer::equal(Self, Self) -> Bool
 pub fn ConfigLayer::name(Self) -> String
 pub fn ConfigLayer::new(String, ConfigValue) -> Self
@@ -342,9 +364,10 @@ pub fn ConfigLayer::not_equal(Self, Self) -> Bool
 pub fn ConfigLayer::to_repr(Self) -> @debug.Repr
 pub fn ConfigLayer::value(Self) -> ConfigValue
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigPath {
   segments : Array[String]
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigPath::equal(Self, Self) -> Bool
 pub fn ConfigPath::length(Self) -> Int32
 pub fn ConfigPath::not_equal(Self, Self) -> Bool
@@ -352,18 +375,20 @@ pub fn ConfigPath::segment(Self, Int32) -> String?
 pub fn ConfigPath::to_repr(Self) -> @debug.Repr
 pub fn ConfigPath::to_string(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigPathError {
   EmptyPath
   EmptySegment(Int32)
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigPathError::equal(Self, Self) -> Bool
 pub fn ConfigPathError::not_equal(Self, Self) -> Bool
 pub fn ConfigPathError::to_repr(Self) -> @debug.Repr
 pub fn ConfigPathError::to_string(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub struct ConfigValue {
-  raw : Json
-} derive(Eq, @debug.Debug)
+  raw : @json.Json
+}
 pub fn ConfigValue::array(Array[Self]) -> Self
 pub fn ConfigValue::as_boolean(Self) -> Bool?
 pub fn ConfigValue::as_number(Self) -> Double?
@@ -394,6 +419,7 @@ pub fn ConfigValue::string(String) -> Self
 pub fn ConfigValue::to_json_string(Self) -> String
 pub fn ConfigValue::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub(all) enum ConfigValueKind {
   Null
   Boolean
@@ -401,15 +427,16 @@ pub(all) enum ConfigValueKind {
   String
   Array
   Object
-} derive(Eq, @debug.Debug)
+}
 pub fn ConfigValueKind::equal(Self, Self) -> Bool
 pub fn ConfigValueKind::not_equal(Self, Self) -> Bool
 pub fn ConfigValueKind::to_repr(Self) -> @debug.Repr
 pub fn ConfigValueKind::to_string(Self) -> String
 
+#derive(Eq, @debug.Debug)
 pub struct LayeredConfig {
   layers : Array[ConfigLayer]
-} derive(Eq, @debug.Debug)
+}
 pub fn LayeredConfig::empty() -> Self
 pub fn LayeredConfig::equal(Self, Self) -> Bool
 pub fn LayeredConfig::layer(Self, Int32) -> ConfigLayer?
@@ -421,11 +448,12 @@ pub fn LayeredConfig::new(Array[ConfigLayer]) -> Self
 pub fn LayeredConfig::not_equal(Self, Self) -> Bool
 pub fn LayeredConfig::to_repr(Self) -> @debug.Repr
 
+#derive(Eq, @debug.Debug)
 pub struct LayeredMergeResult {
   value : ConfigValue
   conflicts : Array[ConfigConflict]
   sources : Map[String, String]
-} derive(Eq, @debug.Debug)
+}
 pub fn LayeredMergeResult::conflict(Self, Int32) -> ConfigConflict?
 pub fn LayeredMergeResult::conflict_count(Self) -> Int32
 pub fn LayeredMergeResult::equal(Self, Self) -> Bool
@@ -436,10 +464,11 @@ pub fn LayeredMergeResult::source_count(Self) -> Int32
 pub fn LayeredMergeResult::to_repr(Self) -> @debug.Repr
 pub fn LayeredMergeResult::value(Self) -> ConfigValue
 
+#derive(Eq, @debug.Debug)
 pub struct MergeResult {
   value : ConfigValue
   conflicts : Array[ConfigConflict]
-} derive(Eq, @debug.Debug)
+}
 pub fn MergeResult::conflict(Self, Int32) -> ConfigConflict?
 pub fn MergeResult::conflict_count(Self) -> Int32
 pub fn MergeResult::equal(Self, Self) -> Bool

@@ -1,9 +1,10 @@
 ///|
 /// A named configuration source used by future layered merges.
+#derive(Eq, Debug)
 pub struct ConfigLayer {
   name : String
   value : ConfigValue
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigLayer with Eq::{not_equal, equal}

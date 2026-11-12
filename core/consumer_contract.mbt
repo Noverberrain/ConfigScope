@@ -1,6 +1,7 @@
 ///|
 /// A declared expectation of a configuration consumer. Missing values may be
 /// supplied by the consumer's default before type and allowed-value checks.
+#derive(Eq, Debug)
 pub struct ConfigConsumerRule {
   path : ConfigPath
   required : Bool
@@ -11,7 +12,7 @@ pub struct ConfigConsumerRule {
   maximum : Double?
   integer : Bool
   when : (ConfigPath, ConfigValue)?
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigConsumerRule with Eq::{not_equal, equal}
@@ -20,9 +21,10 @@ pub extend ConfigConsumerRule with Eq::{not_equal, equal}
 pub extend ConfigConsumerRule with Debug::{to_repr}
 
 ///|
+#derive(Eq, Debug)
 pub struct ConfigConsumerContract {
   rules : Array[ConfigConsumerRule]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigConsumerContract with Eq::{not_equal, equal}
@@ -31,6 +33,7 @@ pub extend ConfigConsumerContract with Eq::{not_equal, equal}
 pub extend ConfigConsumerContract with Debug::{to_repr}
 
 ///|
+#derive(Eq, Debug)
 pub(all) enum ConfigConsumerIssueKind {
   MissingRequired
   TypeMismatch
@@ -39,7 +42,7 @@ pub(all) enum ConfigConsumerIssueKind {
   AboveMaximum
   NotInteger
   NonFiniteNumber
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigConsumerIssueKind with Eq::{not_equal, equal}
@@ -48,10 +51,11 @@ pub extend ConfigConsumerIssueKind with Eq::{not_equal, equal}
 pub extend ConfigConsumerIssueKind with Debug::{to_repr}
 
 ///|
+#derive(Eq, Debug)
 pub struct ConfigConsumerIssue {
   path : ConfigPath
   kind : ConfigConsumerIssueKind
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigConsumerIssue with Eq::{not_equal, equal}

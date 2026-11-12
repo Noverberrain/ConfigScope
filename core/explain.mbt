@@ -2,11 +2,12 @@
 /// A diagnostic view of one merged configuration field.
 ///
 /// The explanation combines the final value with the layer that supplied it.
+#derive(Eq, Debug)
 pub struct ConfigExplanation {
   path : ConfigPath
   value : ConfigValue
   source : String
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigExplanation with Eq::{not_equal, equal}

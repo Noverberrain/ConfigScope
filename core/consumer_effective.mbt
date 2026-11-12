@@ -1,12 +1,13 @@
 ///|
 /// Source of a declared rule's effective selection. No configuration values
 /// are exposed in the public change report.
+#derive(Eq, Debug)
 pub(all) enum ConfigEffectiveSource {
   Inactive
   Missing
   Explicit
   Default
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigEffectiveSource with Eq::{not_equal, equal}

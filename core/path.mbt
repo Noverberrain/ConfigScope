@@ -4,9 +4,10 @@
 /// The first version intentionally supports only simple paths such as
 /// `server.port`. Escaping dots inside key names will be added separately if
 /// the project later needs it.
+#derive(Eq, Debug)
 pub struct ConfigPath {
   segments : Array[String]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigPath with Eq::{not_equal, equal}
@@ -16,10 +17,11 @@ pub extend ConfigPath with Debug::{to_repr}
 
 ///|
 /// Describes why a textual configuration path could not be parsed.
+#derive(Eq, Debug)
 pub(all) enum ConfigPathError {
   EmptyPath
   EmptySegment(Int32)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigPathError with Eq::{not_equal, equal}

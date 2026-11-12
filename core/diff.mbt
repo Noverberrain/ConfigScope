@@ -1,11 +1,12 @@
 ///|
 /// Describes how one configuration path differs between two values.
+#derive(Eq, Debug)
 pub(all) enum ConfigDiffKind {
   Added
   Removed
   Changed
   TypeChanged
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigDiffKind with Eq::{not_equal, equal}
@@ -15,12 +16,13 @@ pub extend ConfigDiffKind with Debug::{to_repr}
 
 ///|
 /// A single difference between an earlier and a later configuration value.
+#derive(Eq, Debug)
 pub struct ConfigDiff {
   path : ConfigPath
   kind : ConfigDiffKind
   before : ConfigValue?
   after : ConfigValue?
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigDiff with Eq::{not_equal, equal}

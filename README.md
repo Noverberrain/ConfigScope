@@ -1,5 +1,8 @@
 # ConfigScope
 
+Toolchain verified on Windows (2026-11-13): `moon 0.1.20261104` and
+`moonc 0.10.20+65efd5b93`; checked, built and tested wasm, wasm-gc, JS and native.
+
 ConfigScope is a MoonBit-native configuration release checker. It reports
 structural changes between JSON snapshots and can separately check a candidate
 against explicit consumer constraints. Snapshot labels alone do not prove that

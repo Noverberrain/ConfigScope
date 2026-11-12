@@ -4,11 +4,12 @@
 /// This baseline classification treats added paths as compatible, changed
 /// values as behavioral changes, and removed or type-changed paths as breaking
 /// changes. A later policy layer can refine these defaults with schema rules.
+#derive(Eq, Debug)
 pub(all) enum ConfigCompatibilityImpact {
   Compatible
   Behavioral
   Breaking
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityImpact with Eq::{not_equal, equal}
@@ -22,11 +23,12 @@ pub extend ConfigCompatibilityImpact with Debug::{to_repr}
 /// `BreakingOnly` is the default and rejects only breaking changes.
 /// `NoBehavioralChanges` also rejects behavioral changes, while `NoChanges`
 /// requires the two snapshots to be identical.
+#derive(Eq, Debug)
 pub(all) enum ConfigCompatibilityPolicy {
   BreakingOnly
   NoBehavioralChanges
   NoChanges
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityPolicy with Eq::{not_equal, equal}
@@ -36,10 +38,11 @@ pub extend ConfigCompatibilityPolicy with Debug::{to_repr}
 
 ///|
 /// A configuration difference together with its compatibility impact.
+#derive(Eq, Debug)
 pub struct ConfigCompatibilityChange {
   difference : ConfigDiff
   impact : ConfigCompatibilityImpact
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityChange with Eq::{not_equal, equal}
@@ -49,9 +52,10 @@ pub extend ConfigCompatibilityChange with Debug::{to_repr}
 
 ///|
 /// The compatibility result for an earlier and a later configuration value.
+#derive(Eq, Debug)
 pub struct ConfigCompatibilityReport {
   changes : Array[ConfigCompatibilityChange]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityReport with Eq::{not_equal, equal}

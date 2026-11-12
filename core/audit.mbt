@@ -3,10 +3,11 @@
 ///
 /// Rules can require a path to exist or require an existing value to have a
 /// particular JSON-compatible kind.
+#derive(Eq, Debug)
 pub(all) enum ConfigAuditRule {
   Required(ConfigPath)
   TypeIs(ConfigPath, ConfigValueKind)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigAuditRule with Eq::{not_equal, equal}
@@ -16,10 +17,11 @@ pub extend ConfigAuditRule with Debug::{to_repr}
 
 ///|
 /// Describes why a configuration audit reported an issue.
+#derive(Eq, Debug)
 pub(all) enum ConfigAuditIssueKind {
   MissingRequired
   TypeMismatch
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigAuditIssueKind with Eq::{not_equal, equal}
@@ -29,12 +31,13 @@ pub extend ConfigAuditIssueKind with Debug::{to_repr}
 
 ///|
 /// A single issue found while auditing a configuration value.
+#derive(Eq, Debug)
 pub struct ConfigAuditIssue {
   path : ConfigPath
   kind : ConfigAuditIssueKind
   expected_kind : ConfigValueKind?
   actual_kind : ConfigValueKind?
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigAuditIssue with Eq::{not_equal, equal}

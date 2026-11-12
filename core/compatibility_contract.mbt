@@ -4,13 +4,14 @@
 /// The manifest contains one candidate snapshot, at least one historical
 /// baseline snapshot, and an optional release gate. Paths are kept as supplied
 /// so callers can resolve them relative to the manifest file.
+#derive(Eq, Debug)
 pub struct ConfigCompatibilityContract {
   candidate_path : String
   baseline_paths : Array[String]
   policy : ConfigCompatibilityPolicy
   ignored_paths : Array[ConfigPath]
   consumer_paths : Array[String]
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend ConfigCompatibilityContract with Eq::{not_equal, equal}

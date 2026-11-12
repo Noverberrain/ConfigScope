@@ -42,6 +42,9 @@ jobs:
       - name: Run tests
         run: moon test --deny-warn
 
+      - name: Build verified backends
+        run: moon build --target all --deny-warn
+
       - name: Test Python report and verification tools
         run: python3 -m unittest discover -s scripts -p 'test_*.py'
 
